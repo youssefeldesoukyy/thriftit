@@ -1,4 +1,9 @@
-*{ padding: 0%; margin: 0%; box-sizing: border-box; text-decoration: none; list-style: none; font-family:sans-serif } 
+*{ padding: 0%; margin: 0%; box-sizing: border-box; text-decoration: none; list-style: none; font-family:sans-serif }
+
+/* Navbar — same cream as thriftit-logo.png (sampled corner pixels ≈ #FEFAF3) */
+:root {
+  --thriftit-navbar-bg: #FEFAF3;
+}
 
 header{height: 100vh;width: 100%; background-image: url(images/omarr.avif); background-size: 1210px 1340px; background-position: center center; }
 
@@ -151,43 +156,33 @@ header{height: 100vh;width: 100%; background-image: url(images/omarr.avif); back
 
 
 
-/* خلفية سوداء للـ menu على الموبايل */
+/* Mobile dropdown: same cream as logo */
 @media (max-width: 991px) {
   .navbar-collapse {
-    background-color: #000; /* خلفية سوداء */
-    padding: 20px; /* مسافة من الداخل */
+    background-color: var(--thriftit-navbar-bg);
+    padding: 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
   }
 
-  /* الروابط كلها أبيض وخط جميل */
   .navbar-collapse .nav-link {
-    color: #fff !important; /* أبيض */
-    font-weight: 500;         /* خط متوسط الوزن */
-    font-size: 18px;          /* حجم الخط */
-    font-family: 'Arial', sans-serif; /* خط نظيف */
-    margin-bottom: 10px;      /* مسافة بين الروابط */
+    color: #111 !important;
+    font-weight: 500;
+    font-size: 18px;
+    font-family: 'Arial', sans-serif;
+    margin-bottom: 10px;
     transition: color 0.3s;
   }
 
-  /* تأثير عند المرور بالماوس */
   .navbar-collapse .nav-link:hover {
-    color: #48985d; /* لون أخضر عند hover */
+    color: #48985d !important;
   }
 
-  /* البحث وأيقونات الكارت و Sign in */
-  .navbar-collapse .d-flex a,
-  .navbar-collapse .d-flex input {
-    color: #fff !important;
+  .navbar-collapse .d-flex a.cart-link,
+  .navbar-collapse .d-flex a.wishlist-link {
+    color: #111 !important;
   }
 
-  .navbar-collapse .d-flex input {
-    background-color: #222;
-    border: 1px solid #444;
-    color: #fff;
-  }
-
-  .navbar-collapse .d-flex input::placeholder {
-    color: #ccc;
-  }
+  /* Search uses shared pill styles above */
 }
 
 
@@ -201,43 +196,104 @@ header{height: 100vh;width: 100%; background-image: url(images/omarr.avif); back
 
 
 
-/* روابط Navbar و Sign in و Cart */
+/* Navbar links + cart (light bar, dark text) */
+.navbar-light .navbar-nav .nav-link,
 .navbar-nav .nav-link,
 .sign-link,
-.cart-link {
-    color: #fff; /* أبيض */
+.cart-link,
+.wishlist-link {
+    color: #111 !important;
     font-family: 'Arial', sans-serif;
     font-weight: bold;
     font-size: 18px;
     transition: color 0.3s;
 }
 
+.navbar-light .navbar-nav .nav-link:hover,
 .navbar-nav .nav-link:hover,
 .sign-link:hover,
-.cart-link:hover {
-    color: #48985d; /* أخضر عند hover */
+.cart-link:hover,
+.wishlist-link:hover {
+    color: #48985d !important;
 }
 
-/* البحث */
-.navbar .form-control {
-    font-size: 18px;
-    padding: 8px;
-    border: 1px solid #fff;
-    background-color: rgba(255,255,255,0.1);
-    color: #fff;
-    width: 200px;
+/* Navbar search: thin frame, sharp corners, transparent fill, icon submit (reference style) */
+.navbar-search-form {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 0 1 auto;
+  min-width: 0;
+  width: clamp(170px, 20vw, 280px);
+  max-width: 100%;
+  margin: 0;
+  border: 1px solid #1a1a1a;
+  border-radius: 0;
+  background: transparent;
 }
 
-.navbar .form-control::placeholder {
-    color: #eee;
+.navbar-search-form:focus-within {
+  border-color: #000;
 }
 
-/* Mobile menu */
-@media (max-width: 991px){
-  .navbar-collapse {
-    background-color: rgba(0,0,0,0.8); /* شبه شفاف على الموبايل */
-    padding: 20px;
-  }}
+.navbar-search-input,
+.navbar-search-input.form-control {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100% !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0.41rem 2.15rem 0.41rem 0.58rem !important;
+  margin: 0 !important;
+  font-size: 14px;
+  font-weight: 400;
+  color: #111 !important;
+  line-height: 1.35;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.navbar-search-input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.navbar-search-input::placeholder {
+  color: #333;
+  opacity: 0.85;
+}
+
+.navbar-search-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 2.15rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #1a1a1a !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.navbar-search-btn:hover,
+.navbar-search-btn:focus-visible {
+  color: #48985d !important;
+}
+
+.navbar-search-btn:focus {
+  outline: none;
+}
 
   
 
@@ -255,80 +311,39 @@ header{height: 100vh;width: 100%; background-image: url(images/omarr.avif); back
 
 
 
- /* Links Navbar + Sign in + Cart */
-.navbar-nav .nav-link,
-.sign-link,
-.cart-link {
-    color: #fff; /* أبيض */
-    font-family: 'Arial', sans-serif;
-    font-weight: bold;
-    font-size: 18px;
-    text-decoration: none; /* يشيل الخط تحت الكلمات */
-}
-
-/* إلغاء أي تأثير hover أو active */
-.navbar-nav .nav-link:hover,
-.navbar-nav .nav-link:focus,
-.navbar-nav .nav-link:active,
-.sign-link:hover,
-.sign-link:focus,
-.sign-link:active,
-.cart-link:hover,
-.cart-link:focus,
-.cart-link:active {
-    color: #fff !important;  /* أبيض ثابت */
-    text-decoration: none;   /* يشيل أي خط */
-}
-
-/* البحث */
-.navbar .form-control {
-    font-size: 18px;
-    padding: 8px;
-    border: 1px solid #fff;
-    background-color: rgba(255,255,255,0.1);
-    color: #fff;
-    width: 200px;
-}
-
-.navbar .form-control::placeholder {
-    color: #eee;
-}
-
-/* Mobile menu */
+/* Mobile menu — larger tap targets */
 @media (max-width: 991px) {
-  .navbar-collapse {
-    background-color: rgba(0,0,0,0.8); /* شبه شفاف على الموبايل */
-    padding: 20px;
-  }
-
   .navbar-collapse .nav-link,
   .navbar-collapse .sign-link,
-  .navbar-collapse .cart-link {
-    color: #fff !important;
+  .navbar-collapse .cart-link,
+  .navbar-collapse .wishlist-link {
     font-size: 22px;
     margin-bottom: 15px;
     display: block;
-    text-decoration: none; /* يشيل الخط */
+    text-decoration: none;
   }
 
-  .navbar-collapse .d-flex input {
+  .navbar-collapse .d-flex.gap-3 {
+    flex-wrap: wrap;
     width: 100%;
-    font-size: 18px;
-    padding: 10px;
-    background-color: rgba(255,255,255,0.1);
-    border: 1px solid #fff;
-    color: #fff;
-    margin-bottom: 15px;
   }
 
-  .navbar-collapse .d-flex input::placeholder {
-    color: #eee;
+  .navbar-collapse .d-flex.gap-3 .navbar-search-form {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 0.35rem;
   }
-}
 
-/* Search bar normal on desktop */
-.navbar .form-control {
-    width: 200px;
+  .navbar-search-input {
+    font-size: 16px !important;
+    padding: 0.55rem 2.35rem 0.55rem 0.6rem !important;
+  }
+
+  .navbar-search-btn {
+    width: 2.35rem;
+    font-size: 0.95rem;
+  }
 }
 
 
@@ -450,7 +465,111 @@ color: white;
   transform: translateY(-2px);
 }
 
+/* --- Fixed navbar: cream bar (logo bg), dark text --- */
+.navbar.fixed-top,
+nav.navbar.fixed-top {
+  z-index: 1030;
+  background: var(--thriftit-navbar-bg) !important;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+}
 
+.navbar.navbar-light.bg-white {
+  background-color: var(--thriftit-navbar-bg) !important;
+}
+
+.navbar .navbar-nav .nav-link.active,
+.navbar .navbar-nav .nav-link.show {
+  color: #111;
+}
+
+.navbar #username {
+  color: #111 !important;
+}
+
+/* Vertically center logo, links, search, buttons in navbar row */
+.navbar.fixed-top > .container-fluid {
+  align-items: center !important;
+}
+
+.navbar .navbar-brand {
+  align-self: center;
+}
+
+.navbar .navbar-collapse {
+  align-items: center !important;
+}
+
+.navbar > .container-fluid > .navbar-toggler {
+  align-self: center;
+}
+
+.navbar .navbar-nav {
+  align-items: center !important;
+  margin-bottom: 0 !important;
+  padding-top: 0.45rem;
+}
+
+.navbar .navbar-nav .nav-link {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.25;
+}
+
+/* Crowded horizontal bars: wrap to a second row instead of overlapping */
+@media (min-width: 992px) {
+  .navbar-expand-lg .navbar-collapse.show,
+  .navbar-expand-lg .navbar-collapse.collapsing,
+  .navbar-expand-lg .navbar-collapse {
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: 0.5rem;
+    column-gap: 0.5rem;
+    justify-content: flex-end;
+  }
+
+  .navbar-expand-lg .navbar-nav {
+    flex-wrap: wrap;
+    row-gap: 0.15rem;
+    align-items: center;
+  }
+
+  .navbar-expand-lg .navbar-collapse > .d-flex {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    row-gap: 0.35rem;
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  .navbar-expand-lg .navbar-nav .nav-link {
+    font-size: 15px;
+    padding-left: 0.45rem;
+    padding-right: 0.45rem;
+  }
+
+  .navbar-expand-lg .navbar-search-form {
+    width: min(178px, 24vw);
+  }
+
+  .navbar-expand-lg .navbar-search-input {
+    font-size: 13px !important;
+    padding: 0.37rem 2.15rem 0.37rem 0.5rem !important;
+  }
+}
+
+/* Navbar logo image (replaces text wordmark) */
+.thriftit-navbar-logo {
+  height: 38px;
+  width: auto;
+  display: block;
+}
+
+@media (max-width: 575.98px) {
+  .thriftit-navbar-logo {
+    height: 30px;
+  }
+}
 
 
 

@@ -1,0 +1,268 @@
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="style/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <title>Wishlist — Thrift It</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+     <style>
+    body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.8),
+    rgba(0, 0, 0, 0.2)
+  );
+}
+    </style>
+    <script src="config.js"></script>
+    <script src="app-api.js"></script>
+  </head>
+
+
+  
+<body>
+  <div class="toast-container position-fixed top-0 end-0 p-3">
+
+  <div id="liveToast" class="toast align-items-center text-bg-dark border-0">
+    <div class="d-flex">
+      <div class="toast-body" id="toast-msg"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+
+</div>
+
+<nav class="navbar navbar-expand-lg fixed-top navbar-light bg-white border-bottom shadow-sm" style="z-index:9999;">
+
+  <div class="container-fluid">
+
+    <a class="navbar-brand d-flex align-items-center py-2" href="index.html">
+      <img src="images/thriftit-logo.png" alt="Thrift It" class="thriftit-navbar-logo">
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href="women.html">Woman</a></li>
+        <li class="nav-item"><a class="nav-link" href="men.html">Man</a></li>
+        <li class="nav-item"><a class="nav-link" href="seller.html">Sell Your Item</a></li>
+      </ul>
+
+      <div class="d-flex align-items-center gap-3">
+        <form class="navbar-search-form" role="search" onsubmit="goToSearch(event)">
+          <input class="navbar-search-input" type="search" placeholder="Search" id="searchInput" autocomplete="off">
+          <button type="submit" class="navbar-search-btn" aria-label="Search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </button>
+        </form>
+
+        <a href="wishlist.html" class="wishlist-link" aria-label="Wishlist" title="Wishlist">
+          <i class="fa-solid fa-heart"></i>
+        </a>
+
+        <a href="cart.html" class="cart-link">
+          <i class="fa-solid fa-cart-shopping"></i>
+        </a>
+
+        <a href="login.html" id="loginBtn" class="btn btn-outline-dark btn-sm">Login</a>
+        <a href="signup.html" id="signupBtn" class="btn btn-dark btn-sm">Sign Up</a>
+
+        <a href="profile.html" id="username" class="sign-link text-decoration-none align-middle" style="display:none;"></a>
+      </div>
+
+    </div>
+  </div>
+
+</nav>
+
+<script>
+let currentUser = JSON.parse(localStorage.getItem("currentUser"));
+let loginBtn = document.getElementById("loginBtn");
+let signupBtn = document.getElementById("signupBtn");
+let username = document.getElementById("username");
+
+if (currentUser) {
+  loginBtn.style.display = "none";
+  signupBtn.style.display = "none";
+  username.style.display = "inline-block";
+  username.innerText = "Hi, " + currentUser.name;
+} else {
+  loginBtn.style.display = "inline-block";
+  signupBtn.style.display = "inline-block";
+  username.style.display = "none";
+}
+</script>
+<script src="script/bootstrap.min.js"></script>
+<script src="index.js"></script>
+
+<div class="container mt-5 pt-5">
+  <h2 class="text-white">Your Wishlist</h2>
+
+  <div class="table-responsive">
+    <table class="table table-dark table-striped mt-3">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Color</th>
+          <th>Size</th>
+          <th>Price</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody id="wishlist-body"></tbody>
+    </table>
+  </div>
+
+  <p class="text-light text-end mt-3 mb-0">
+    <a href="shopall.html" class="text-white">Continue shopping</a>
+  </p>
+</div>
+
+<script>
+if (!currentUser) {
+  showToast("Please login first");
+  window.location.href = "login.html";
+}
+
+async function loadWishlist() {
+  const tbody = document.getElementById("wishlist-body");
+  tbody.innerHTML =
+    '<tr><td colspan="5" class="text-center py-3 text-muted">Loading wishlist…</td></tr>';
+
+  let rows = [];
+  try {
+    rows = await getWishlistItems();
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML =
+      '<tr><td colspan="5" class="text-center py-5 text-danger">Could not load wishlist. Log in and ensure the API is running.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = "";
+
+  if (rows.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="text-center py-5 text-muted">
+          Your wishlist is empty — save items you love with the heart on a product page.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  rows.forEach((item) => {
+    const price = parseFloat(item.price) || 0;
+    const safeLine = String(item._lineId || "").replace(/"/g, "&quot;");
+    const safePid = String(item.id || "").replace(/"/g, "&quot;");
+    const img = (item.image || "").replace(/"/g, "&quot;");
+    const name = String(item.name || "Item").replace(/</g, "&lt;");
+    tbody.innerHTML += `
+      <tr>
+        <td>
+          <a href="product.html?id=${encodeURIComponent(item.id)}" class="text-white text-decoration-none">
+            <img src="${img}" width="60" class="me-2 rounded" alt="">${name}
+          </a>
+        </td>
+        <td>${item.color || "-"}</td>
+        <td>${item.size || "-"}</td>
+        <td>${price} EGP</td>
+        <td>
+          <button type="button" class="btn btn-danger btn-sm mb-1" data-line-id="${safeLine}" data-product-id="${safePid}">Remove</button>
+          <a class="btn btn-outline-light btn-sm mb-1" href="product.html?id=${encodeURIComponent(item.id)}">View</a>
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.querySelectorAll(".btn-danger[data-product-id]").forEach(function (btn) {
+    btn.addEventListener("click", async function () {
+      try {
+        await removeWishlistLine(
+          btn.getAttribute("data-line-id"),
+          btn.getAttribute("data-product-id")
+        );
+        await loadWishlist();
+        showToast("Removed from wishlist");
+      } catch (e) {
+        showToast((e && e.message) || "Could not remove item");
+      }
+    });
+  });
+}
+
+function showToast(message) {
+  const toastEl = document.getElementById("liveToast");
+  const toastMsg = document.getElementById("toast-msg");
+  toastMsg.innerText = message;
+  const toast = new bootstrap.Toast(toastEl);
+  toast.show();
+}
+
+loadWishlist();
+</script>
+
+<footer class="text-white mt-5 pt-5 pb-4" style="background: rgba(0,0,0,0.9);">
+
+  <div class="container">
+    <div class="row">
+
+      <div class="col-md-4 mb-3">
+        <h4 class="fw-bold">Thrift It</h4>
+
+        <p class="text-light">
+          Buy and sell second-hand fashion safely, easily, and affordably.
+        </p>
+
+        <div class="d-flex gap-3 mt-3">
+          <a href="#" class="text-light fs-5"><i class="fa-brands fa-facebook"></i></a>
+          <a href="#" class="text-light fs-5"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" class="text-light fs-5"><i class="fa-brands fa-tiktok"></i></a>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <h5 class="fw-bold">Payment & Delivery</h5>
+
+        <ul class="list-unstyled text-light">
+          <li>✔ Cash on Delivery & Visa payments available</li>
+          <li>✔ You can inspect the item with the courier (5–10 minutes)</li>
+          <li>✔ Delivery available in Cairo & Giza only</li>
+        </ul>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <h5 class="fw-bold">Quick Links</h5>
+
+        <ul class="list-unstyled">
+          <li><a href="index.html" class="text-light text-decoration-none">Home</a></li>
+          <li><a href="women.html" class="text-light text-decoration-none">Woman</a></li>
+          <li><a href="men.html" class="text-light text-decoration-none">Man</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <hr class="border-light">
+
+    <div class="text-center text-light">
+      <small>© 2026 Thrift It. All rights reserved.</small>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+</html>

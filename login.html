@@ -21,6 +21,8 @@
   
 }
     </style>
+    <script src="config.js"></script>
+    <script src="auth-api.js"></script>
 
 </head>
 <body>
@@ -41,21 +43,20 @@
 
 
 <!-- Navbar -->
-<nav class="fixed-top navbar navbar-expand-lg" style="background-color: transparent;">
+<nav class="navbar navbar-expand-lg fixed-top navbar-light bg-white border-bottom shadow-sm">
   <div class="container-fluid">
     <!-- Logo نصي -->
-    <a class="navbar-brand fw-bold" href="index.html" 
-       style="font-size: 2rem; color: white; letter-spacing: 2px; font-family: 'Poppins', sans-serif; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
-      Thrift It
+    <a class="navbar-brand d-flex align-items-center py-2" href="index.html">
+      <img src="images/thriftit-logo.png" alt="Thrift It" class="thriftit-navbar-logo">
     </a>
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
-      <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+      <span class="navbar-toggler-icon"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="seller.html">Sell Your Item</a></li>
       </ul>
 
       <div class="d-flex align-items-center gap-3">
@@ -177,32 +178,25 @@ function showToast(message) {
 
 
 
-document.getElementById("loginForm").addEventListener("submit", function(e){
+document.getElementById("loginForm").addEventListener("submit", async function(e){
   e.preventDefault();
 
   let email = document.getElementById("email").value.trim().toLowerCase();
   let password = document.getElementById("password").value.trim();
 
-  // validation
   if (email === "" || password === "") {
     showToast("Please fill all fields");
     return;
   }
 
-  let users = JSON.parse(localStorage.getItem("users")) || [];
-
-  // search user
-  let foundUser = users.find(u => u.email === email && u.password === password);
-
-  if (foundUser) {
+  try {
+    await apiLogin(email, password);
     showToast("Login successful ✅");
-
-    // save current user
-    localStorage.setItem("currentUser", JSON.stringify(foundUser));
-
-    window.location.href = "index.html";
-  } else {
-    showToast("Invalid email or password ❌");
+    setTimeout(function () {
+      window.location.href = "index.html";
+    }, 350);
+  } catch (err) {
+    showToast((err && err.message) || "Invalid email or password ❌");
   }
 });
 

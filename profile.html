@@ -1,0 +1,338 @@
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="style/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <title>Your profile — Thrift It</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+     <style>
+    body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.8),
+    rgba(0, 0, 0, 0.2)
+  );
+}
+    </style>
+    <script src="config.js"></script>
+    <script src="app-api.js"></script>
+  </head>
+
+<body>
+  <div class="toast-container position-fixed top-0 end-0 p-3">
+
+  <div id="liveToast" class="toast align-items-center text-bg-dark border-0">
+    <div class="d-flex">
+      <div class="toast-body" id="toast-msg"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+
+</div>
+
+<nav class="navbar navbar-expand-lg fixed-top navbar-light bg-white border-bottom shadow-sm" style="z-index:9999;">
+
+  <div class="container-fluid">
+
+    <a class="navbar-brand d-flex align-items-center py-2" href="index.html">
+      <img src="images/thriftit-logo.png" alt="Thrift It" class="thriftit-navbar-logo">
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href="women.html">Woman</a></li>
+        <li class="nav-item"><a class="nav-link" href="men.html">Man</a></li>
+        <li class="nav-item"><a class="nav-link" href="seller.html">Sell Your Item</a></li>
+      </ul>
+
+      <div class="d-flex align-items-center gap-3">
+        <form class="navbar-search-form" role="search" onsubmit="goToSearch(event)">
+          <input class="navbar-search-input" type="search" placeholder="Search" id="searchInput" autocomplete="off">
+          <button type="submit" class="navbar-search-btn" aria-label="Search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </button>
+        </form>
+
+        <a href="wishlist.html" class="wishlist-link" aria-label="Wishlist" title="Wishlist">
+          <i class="fa-solid fa-heart"></i>
+        </a>
+
+        <a href="cart.html" class="cart-link">
+          <i class="fa-solid fa-cart-shopping"></i>
+        </a>
+
+        <a href="login.html" id="loginBtn" class="btn btn-outline-dark btn-sm">Login</a>
+        <a href="signup.html" id="signupBtn" class="btn btn-dark btn-sm">Sign Up</a>
+
+        <a href="profile.html" id="username" class="sign-link text-decoration-none align-middle" style="display:none;" aria-current="page"></a>
+      </div>
+
+    </div>
+  </div>
+
+</nav>
+
+<script>
+let currentUser = JSON.parse(localStorage.getItem("currentUser"));
+let loginBtn = document.getElementById("loginBtn");
+let signupBtn = document.getElementById("signupBtn");
+let usernameEl = document.getElementById("username");
+
+function logout() {
+  localStorage.removeItem("currentUser");
+  localStorage.removeItem("token");
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("jwt");
+  window.location.href = "login.html";
+}
+
+if (currentUser) {
+  loginBtn.style.display = "none";
+  signupBtn.style.display = "none";
+  usernameEl.style.display = "inline-block";
+  usernameEl.innerText = "Hi, " + currentUser.name;
+} else {
+  loginBtn.style.display = "inline-block";
+  signupBtn.style.display = "inline-block";
+  usernameEl.style.display = "none";
+}
+</script>
+<script src="script/bootstrap.min.js"></script>
+<script src="index.js"></script>
+
+<div class="container mt-5 pt-5 pb-5">
+  <h2 class="text-white mb-4">Your profile</h2>
+
+  <div class="card bg-dark text-white border border-secondary mb-4 shadow-sm">
+    <div class="card-body">
+      <h5 class="card-title">Account</h5>
+      <p id="profile-name" class="mb-1 fw-semibold"></p>
+      <p id="profile-email" class="text-white-50 small mb-0"></p>
+      <div class="mt-3 pt-3 border-top border-secondary">
+        <button type="button" id="profileLogoutBtn" class="btn btn-outline-danger btn-sm">
+          Log out
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="text-white h5 mb-2">Reviews</h3>
+  <p id="reviews-hint" class="text-light small opacity-75 mb-3">
+    Reviews associated with your account (for example ratings you gave or feedback you received as a seller), if your backend exposes them at <code class="text-reset">GET</code> <span id="reviews-path-display" class="text-white-50"></span>.
+  </p>
+
+  <div id="reviews-error" class="alert alert-warning d-none" role="alert"></div>
+
+  <div id="reviews-loading" class="text-white py-3">Loading reviews…</div>
+  <p id="reviews-empty" class="text-light fst-italic d-none py-3 mb-0">No reviews to show yet.</p>
+  <div id="reviews-list" class="row g-3 d-none"></div>
+</div>
+
+<script>
+(function () {
+  if (typeof API_USER_REVIEWS_PATH !== "undefined") {
+    var el = document.getElementById("reviews-path-display");
+    if (el) el.textContent = API_USER_REVIEWS_PATH;
+  }
+})();
+
+function showToast(message) {
+  var toastEl = document.getElementById("liveToast");
+  var toastMsg = document.getElementById("toast-msg");
+  toastMsg.innerText = message;
+  var toast = new bootstrap.Toast(toastEl);
+  toast.show();
+}
+
+if (!currentUser) {
+  showToast("Please log in first");
+  window.location.href = "login.html";
+} else {
+  document.getElementById("profile-name").textContent = currentUser.name || "Member";
+  document.getElementById("profile-email").textContent =
+    currentUser.email || "";
+
+  document.getElementById("profileLogoutBtn").addEventListener("click", logout);
+
+  function escapeHtml(s) {
+    return String(s || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function formatStarsHtml(rating) {
+    var raw = Number(rating);
+    if (rating == null || !Number.isFinite(raw) || raw < 1) {
+      return '<span class="text-secondary small">No rating</span>';
+    }
+    var n = Math.max(1, Math.min(5, Math.round(raw)));
+    var s = "";
+    var i;
+    for (i = 0; i < n; i++) {
+      s += '<i class="fa-solid fa-star text-warning" aria-hidden="true"></i>';
+    }
+    for (i = n; i < 5; i++) {
+      s += '<i class="fa-regular fa-star text-secondary opacity-50" aria-hidden="true"></i>';
+    }
+    return s + ' <span class="text-white-50 small ms-1">(' + n + '/5)</span>';
+  }
+
+  function formatDate(at) {
+    if (!at) return "";
+    var d = new Date(at);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  }
+
+  (async function loadReviews() {
+    var loading = document.getElementById("reviews-loading");
+    var empty = document.getElementById("reviews-empty");
+    var listEl = document.getElementById("reviews-list");
+    var errEl = document.getElementById("reviews-error");
+
+    try {
+      var reviews = await getMyReviews();
+
+      loading.classList.add("d-none");
+
+      if (!reviews.length) {
+        empty.classList.remove("d-none");
+        return;
+      }
+
+      empty.classList.add("d-none");
+      listEl.classList.remove("d-none");
+
+      reviews.forEach(function (r) {
+        var prodHref = r.productId
+          ? "product.html?id=" + encodeURIComponent(r.productId)
+          : "";
+        var prodLine = r.productName
+          ? (prodHref
+              ? '<a class="link-light fw-semibold" href="' +
+                prodHref +
+                '">' +
+                escapeHtml(r.productName) +
+                "</a>"
+              : "<span>" + escapeHtml(r.productName) + "</span>")
+          : prodHref
+          ? '<a class="link-light small" href="' +
+            prodHref +
+            '">View product</a>'
+          : "";
+
+        var whoLine = r.reviewerLabel
+          ? '<p class="text-white-50 small mb-2">From · ' +
+            escapeHtml(r.reviewerLabel) +
+            "</p>"
+          : "";
+
+        var dateLine = formatDate(r.createdAt);
+        var dateHtml = dateLine
+          ? '<p class="text-white-50 small mb-2 mb-md-3">' +
+            escapeHtml(dateLine) +
+            "</p>"
+          : "";
+
+        var col = document.createElement("div");
+        col.className = "col-12 col-md-6";
+        col.innerHTML =
+          '<div class="card h-100 bg-dark text-white border border-secondary shadow-sm">' +
+          '<div class="card-body d-flex flex-column">' +
+          '<div class="mb-2">' +
+          formatStarsHtml(r.rating) +
+          "</div>" +
+          whoLine +
+          (r.text ? '<p class="card-text flex-grow-1">' + escapeHtml(r.text) + "</p>" : "") +
+          (prodLine ? '<p class="mb-2">' + prodLine + "</p>" : "") +
+          dateHtml +
+          "</div></div>";
+
+        listEl.appendChild(col);
+      });
+    } catch (err) {
+      console.error(err);
+      loading.classList.add("d-none");
+      empty.classList.add("d-none");
+      errEl.textContent =
+        "Could not load reviews. Check that you are logged in, your API is running, and `" +
+        (typeof API_USER_REVIEWS_PATH !== "undefined"
+          ? API_USER_REVIEWS_PATH
+          : "/api/users/me/reviews") +
+        "` matches your backend. " +
+        ((err && err.message) || "");
+      errEl.classList.remove("d-none");
+    }
+  })();
+}
+</script>
+
+<footer class="text-white mt-5 pt-5 pb-4" style="background: rgba(0,0,0,0.9);">
+
+  <div class="container">
+    <div class="row">
+
+      <div class="col-md-4 mb-3">
+        <h4 class="fw-bold">Thrift It</h4>
+
+        <p class="text-light">
+          Buy and sell second-hand fashion safely, easily, and affordably.
+        </p>
+
+        <div class="d-flex gap-3 mt-3">
+          <a href="#" class="text-light fs-5"><i class="fa-brands fa-facebook"></i></a>
+          <a href="#" class="text-light fs-5"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" class="text-light fs-5"><i class="fa-brands fa-tiktok"></i></a>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <h5 class="fw-bold">Payment & Delivery</h5>
+
+        <ul class="list-unstyled text-light">
+          <li>✔ Cash on Delivery & Visa payments available</li>
+          <li>✔ You can inspect the item with the courier (5–10 minutes)</li>
+          <li>✔ Delivery available in Cairo & Giza only</li>
+        </ul>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <h5 class="fw-bold">Quick Links</h5>
+
+        <ul class="list-unstyled">
+          <li><a href="index.html" class="text-light text-decoration-none">Home</a></li>
+          <li><a href="profile.html" class="text-light text-decoration-none">Your profile</a></li>
+          <li><a href="women.html" class="text-light text-decoration-none">Woman</a></li>
+          <li><a href="men.html" class="text-light text-decoration-none">Man</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <hr class="border-light">
+
+    <div class="text-center text-light">
+      <small>© 2026 Thrift It. All rights reserved.</small>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+</html>

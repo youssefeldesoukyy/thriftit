@@ -6,42 +6,42 @@
   <title>Admin Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
   <link rel="stylesheet" href="style.css">
+  <script src="config.js"></script>
+  <script src="products-api.js"></script>
+  <script src="app-api.js"></script>
 </head>
 <body>
 
 <!-- Navbar -->
-<nav class="fixed-top navbar navbar-expand-lg" style="background-color: transparent;">
+<nav class="navbar navbar-expand-lg fixed-top navbar-light bg-white border-bottom shadow-sm">
   <div class="container-fluid">
-    <a class="navbar-brand fw-bold" href="index.html" 
-       style="font-size: 2rem; color: black; letter-spacing: 2px; font-family: 'Poppins', sans-serif; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
-      Thrift It
+    <a class="navbar-brand d-flex align-items-center py-2" href="index.html">
+      <img src="images/thriftit-logo.png" alt="Thrift It" class="thriftit-navbar-logo">
     </a>
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
-      <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+      <span class="navbar-toggler-icon"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="women.html">Women</a></li>
-        <li class="nav-item"><a class="nav-link" href="men.html">Men</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Return\Exchange Policy</a></li>
+        <li class="nav-item"><a class="nav-link" href="women.html">Woman</a></li>
+        <li class="nav-item"><a class="nav-link" href="men.html">Man</a></li>
         <li class="nav-item"><a class="nav-link" href="#">Shipping</a></li>
         <li class="nav-item"><a class="nav-link" href="seller.html">Sell Your Item</a></li>
       </ul>
 
       <div class="d-flex align-items-center gap-3">
-         <form class="d-flex" onsubmit="goToSearch(event)">
-         <input 
-         class="form-control me-2" 
-         type="search" 
-         placeholder="Search" 
-         id="searchInput"
-        >
-        <button class="btn btn-outline-success">Search</button>
-      </form>
+         <form class="navbar-search-form" role="search" onsubmit="goToSearch(event)">
+          <input class="navbar-search-input" type="search" placeholder="Search" id="searchInput" autocomplete="off">
+          <button type="submit" class="navbar-search-btn" aria-label="Search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </button>
+        </form>
+
+         <a href="wishlist.html" class="wishlist-link" aria-label="Wishlist" title="Wishlist"><i class="fa-solid fa-heart"></i></a>
 
          <a href="cart.html" class="cart-link"><i class="fa-solid fa-cart-shopping"></i></a>
          
@@ -61,83 +61,101 @@
 <script>
 const pendingContainer = document.getElementById('pendingProducts');
 
-// Load pending products
-function loadPendingProducts() {
-  pendingContainer.innerHTML = "";
-  const products = JSON.parse(localStorage.getItem('products')) || [];
-  const pendingProducts = products.filter(p => p.status === "pending");
+async function loadPendingProducts() {
+  pendingContainer.innerHTML = "<p class='text-muted'>Loading…</p>";
+  try {
+    const products = await fetchProductsMerged();
+    const pendingProducts = products.filter(
+      (p) => (p.status || "").toLowerCase() === "pending"
+    );
 
-  if(pendingProducts.length === 0){
-    pendingContainer.innerHTML = "<p class='text-muted'>No pending products.</p>";
-    return;
-  }
+    pendingContainer.innerHTML = "";
 
-  pendingProducts.forEach(product => {
-    const col = document.createElement('div');
-    col.className = "col-md-4 mb-4";
-    col.innerHTML = `
+    if (pendingProducts.length === 0) {
+      pendingContainer.innerHTML = "<p class='text-muted'>No pending products.</p>";
+      return;
+    }
+
+    pendingProducts.forEach((product) => {
+      const col = document.createElement("div");
+      col.className = "col-md-4 mb-4";
+      const safeId = String(product.id).replace(/[^a-zA-Z0-9_-]/g, "");
+      col.innerHTML = `
       <div class="card">
-        <div id="carousel-${product.id}" class="carousel slide" data-bs-interval="false">
+        <div id="carousel-${safeId}" class="carousel slide" data-bs-interval="false">
           <div class="carousel-inner">
-            ${product.images.map((img, index) => `
-              <div class="carousel-item ${index === 0 ? 'active' : ''}">
-                <img src="${img}" class="d-block w-100">
+            ${(product.images || []).map((img, index) => `
+              <div class="carousel-item ${index === 0 ? "active" : ""}">
+                <img src="${img}" class="d-block w-100" alt="">
               </div>
-            `).join('')}
+            `).join("")}
           </div>
-          <button class="carousel-control-prev" type="button" data-bs-target="#carousel-${product.id}" data-bs-slide="prev">
+          <button class="carousel-control-prev" type="button" data-bs-target="#carousel-${safeId}" data-bs-slide="prev">
             <span class="carousel-control-prev-icon"></span>
           </button>
-          <button class="carousel-control-next" type="button" data-bs-target="#carousel-${product.id}" data-bs-slide="next">
+          <button class="carousel-control-next" type="button" data-bs-target="#carousel-${safeId}" data-bs-slide="next">
             <span class="carousel-control-next-icon"></span>
           </button>
         </div>
         <div class="card-body">
           <h5>${product.name}</h5>
+          ${product.brand ? `<p class="text-muted small mb-1">Brand: ${product.brand}</p>` : ""}
           <p>${product.price} EGP</p>
           <p>Color: ${product.color}</p>
           <p>Size: ${product.size}</p>
           <p>Condition: ${product.condition}</p>
-          <p>Email: ${product.email}</p>
+          <p>Seller: ${product.email || product.sellerEmail || "—"}</p>
           <button class="btn btn-success me-2 approve-btn">Approve</button>
           <button class="btn btn-danger reject-btn">Reject</button>
         </div>
       </div>
     `;
-    pendingContainer.appendChild(col);
+      pendingContainer.appendChild(col);
 
-    // Button Events
-    col.querySelector(".approve-btn").addEventListener("click", () => handleAction(product.id, "approved"));
-    col.querySelector(".reject-btn").addEventListener("click", () => handleAction(product.id, "rejected"));
-  });
-}
-
-// Handle approve/reject/delete actions
-function handleAction(productId, action) {
-  const products = JSON.parse(localStorage.getItem('products')) || [];
-  const index = products.findIndex(p => p.id === productId);
-
-  if(index !== -1){
-    if(action === "approved") {
-      products[index].status = "approved";
-    } else {
-      products.splice(index,1); // حذف المنتج لو تم رفضه
-    }
-    localStorage.setItem('products', JSON.stringify(products));
-    loadPendingProducts();
+      col.querySelector(".approve-btn").addEventListener("click", () =>
+        handleAction(product.id, "approved")
+      );
+      col.querySelector(".reject-btn").addEventListener("click", () =>
+        handleAction(product.id, "rejected")
+      );
+    });
+  } catch (e) {
+    console.error(e);
+    pendingContainer.innerHTML =
+      "<p class='text-danger'>Could not load pending products. Open console.</p>";
   }
 }
 
-// Delete all approved products
-document.getElementById("deleteApprovedBtn").addEventListener("click", () => {
-  let products = JSON.parse(localStorage.getItem("products")) || [];
-  products = products.filter(p => p.status !== "approved");
-  localStorage.setItem("products", JSON.stringify(products));
-  alert("All approved products have been deleted!");
-  loadPendingProducts();
+async function handleAction(productId, action) {
+  try {
+    if (action === "approved") {
+      await updateProductStatus(productId, "approved");
+    } else {
+      await updateProductStatus(productId, "rejected");
+    }
+    await loadPendingProducts();
+  } catch (e) {
+    alert((e && e.message) || "Action failed — check PATCH /api/products/:id on backend");
+  }
+}
+
+document.getElementById("deleteApprovedBtn").addEventListener("click", async () => {
+  if (!confirm("Delete ALL approved products from the server?")) return;
+  try {
+    const products = await fetchProductsMerged();
+    const approved = products.filter(
+      (p) => (p.status || "").toLowerCase() === "approved"
+    );
+    for (const p of approved) {
+      await deleteProduct(p.id);
+    }
+    alert("Removed " + approved.length + " approved listing(s).");
+    await loadPendingProducts();
+  } catch (e) {
+    alert((e && e.message) || "Delete failed");
+  }
 });
 
-// Initial load
 loadPendingProducts();
 </script>
 

@@ -36,28 +36,29 @@
       object-fit: cover;
     }
   </style>
+  <script src="config.js"></script>
+  <script src="products-api.js"></script>
 </head>
 
 <body>
 
-<nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-transparent" style="z-index:9999;">
+<nav class="navbar navbar-expand-lg fixed-top navbar-light bg-white border-bottom shadow-sm" style="z-index:9999;">
   <div class="container-fluid">
 
-    <a class="navbar-brand fw-bold text-white fs-4" href="index.html">
-      Thrift It
+    <a class="navbar-brand d-flex align-items-center py-2" href="index.html">
+      <img src="images/thriftit-logo.png" alt="Thrift It" class="thriftit-navbar-logo">
     </a>
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
-      <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+      <span class="navbar-toggler-icon"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
 
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link text-white" href="index.html">Home</a></li>
-        <li class="nav-item"><a class="nav-link text-white" href="women.html">Women</a></li>
-        <li class="nav-item"><a class="nav-link text-white" href="men.html">Men</a></li>
-        <li class="nav-item"><a class="nav-link text-white" href="seller.html">Sell Your Item</a></li>
+        <li class="nav-item"><a class="nav-link" href="women.html">Woman</a></li>
+        <li class="nav-item"><a class="nav-link" href="men.html">Man</a></li>
+        <li class="nav-item"><a class="nav-link" href="seller.html">Sell Your Item</a></li>
       </ul>
 
     </div>
@@ -80,13 +81,14 @@ const type = params.get("type");
 
 document.getElementById("categoryTitle").innerText = type || "";
 
-const products = JSON.parse(localStorage.getItem("products")) || [];
+(async () => {
+const products = await fetchProductsMerged();
 const container = document.getElementById("productsContainer");
 
 products.forEach((product, index) => {
 
   if (
-  product.status === "approved" &&
+  isProductListedOnShop(product) &&
   product.category?.toLowerCase() === type?.toLowerCase()
 ) {
 
@@ -142,6 +144,7 @@ products.forEach((product, index) => {
     container.appendChild(card);
   }
 });
+})();
 </script>
 
 <script src="script/bootstrap.min.js"></script>
@@ -152,7 +155,7 @@ products.forEach((product, index) => {
     <div class="row">
 
       <!-- BRAND -->
-      <div class="col-md-3 mb-3">
+      <div class="col-md-4 mb-3">
         <h4 class="fw-bold">Thrift It</h4>
 
         <p class="text-light">
@@ -168,7 +171,7 @@ products.forEach((product, index) => {
       </div>
 
       <!-- PAYMENT & DELIVERY -->
-      <div class="col-md-3 mb-3">
+      <div class="col-md-4 mb-3">
         <h5 class="fw-bold">Payment & Delivery</h5>
 
         <ul class="list-unstyled text-light">
@@ -178,26 +181,14 @@ products.forEach((product, index) => {
         </ul>
       </div>
 
-      <!-- POLICY -->
-      <div class="col-md-3 mb-3">
-        <h5 class="fw-bold">Return & Exchange</h5>
-
-        <ul class="list-unstyled text-light">
-          <li>✔ No returns after the courier leaves</li>
-          <li>✔ Items must be checked during delivery only</li>
-          <li>✔ Shipping fees apply for return</li>
-        </ul>
-      </div>
-
       <!-- LINKS -->
-      <div class="col-md-3 mb-3">
+      <div class="col-md-4 mb-3">
         <h5 class="fw-bold">Quick Links</h5>
 
         <ul class="list-unstyled">
           <li><a href="index.html" class="text-light text-decoration-none">Home</a></li>
-          <li><a href="women.html" class="text-light text-decoration-none">Women</a></li>
-          <li><a href="men.html" class="text-light text-decoration-none">Men</a></li>
-          <li><a href="seller.html" class="text-light text-decoration-none">Sell Your Item</a></li>
+          <li><a href="women.html" class="text-light text-decoration-none">Woman</a></li>
+          <li><a href="men.html" class="text-light text-decoration-none">Man</a></li>
         </ul>
       </div>
 

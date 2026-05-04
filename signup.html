@@ -21,6 +21,8 @@
   
 }
     </style>
+    <script src="config.js"></script>
+    <script src="auth-api.js"></script>
 </head>
 <body>
   <!-- Bootstrap Toast Notification -->
@@ -35,21 +37,20 @@
 
 </div>
 <!-- Navbar -->
-<nav class="fixed-top navbar navbar-expand-lg" style="background-color: transparent;">
+<nav class="navbar navbar-expand-lg fixed-top navbar-light bg-white border-bottom shadow-sm">
   <div class="container-fluid">
     <!-- Logo نصي -->
-    <a class="navbar-brand fw-bold" href="index.html" 
-       style="font-size: 2rem; color: white; letter-spacing: 2px; font-family: 'Poppins', sans-serif; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
-      Thrift It
+    <a class="navbar-brand d-flex align-items-center py-2" href="index.html">
+      <img src="images/thriftit-logo.png" alt="Thrift It" class="thriftit-navbar-logo">
     </a>
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
-      <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+      <span class="navbar-toggler-icon"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="seller.html">Sell Your Item</a></li>
       </ul>
 
       <div class="d-flex align-items-center gap-3">
@@ -94,8 +95,13 @@
     <form id="signupForm">
       
       <div class="mb-3">
-        <label class="form-label">Name</label>
-        <input type="text" id="name" class="form-control" placeholder="Enter your name" required>
+        <label class="form-label">First name</label>
+        <input type="text" id="firstName" class="form-control" placeholder="First name" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Last name</label>
+        <input type="text" id="lastName" class="form-control" placeholder="Last name" required>
       </div>
 
       <div class="mb-3">
@@ -145,16 +151,16 @@
 
 
 <script>
-document.getElementById("signupForm").addEventListener("submit", function(e){
+document.getElementById("signupForm").addEventListener("submit", async function(e){
   e.preventDefault();
 
-  let name = document.getElementById("name").value.trim();
+  let firstName = document.getElementById("firstName").value.trim();
+  let lastName = document.getElementById("lastName").value.trim();
   let email = document.getElementById("email").value.trim().toLowerCase();
   let password = document.getElementById("password").value.trim();
   let confirmPassword = document.getElementById("confirmPassword").value.trim();
 
-  // validation
-  if (name === "" || email === "" || password === "" || confirmPassword === "") {
+  if (firstName === "" || lastName === "" || email === "" || password === "" || confirmPassword === "") {
     showToast("Please fill all fields");
     return;
   }
@@ -169,35 +175,21 @@ document.getElementById("signupForm").addEventListener("submit", function(e){
     return;
   }
 
-  // get users
-  let users = JSON.parse(localStorage.getItem("users")) || [];
-
-  // check email exists
-  let exists = users.find(user => user.email === email);
-
-  if (exists) {
-    showToast("Email already exists ❌");
-    return;
+  try {
+    await apiRegister(firstName, lastName, email, password);
+    showToast("Account created successfully 🎉");
+    setTimeout(function () {
+      window.location.href = "index.html";
+    }, 350);
+  } catch (err) {
+    var msg = (err && err.message) || "Sign up failed";
+    showToast(msg);
+    if (msg.indexOf("Please log in") !== -1) {
+      setTimeout(function () {
+        window.location.href = "login.html";
+      }, 1600);
+    }
   }
-
-  // add new user
-  let newUser = {
-    name: name,
-    email: email,
-    password: password
-  };
-
-  users.push(newUser);
-
-  // save users
-  localStorage.setItem("users", JSON.stringify(users));
-
-  // save current user (login automatically)
-  localStorage.setItem("currentUser", JSON.stringify(newUser));
-
-  showToast("Account created successfully 🎉");
-
-  window.location.href = "index.html";
 });
 // Show Bootstrap Toast instead of alert()
 function showToast(message) {

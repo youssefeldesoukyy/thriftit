@@ -21,6 +21,8 @@
   );
 }
     </style>
+    <script src="config.js"></script>
+    <script src="app-api.js"></script>
   </head>
 
 <body>
@@ -38,36 +40,68 @@
 
 
   <!-- Navbar -->
-<nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-transparent" style="z-index:9999;">
-
+<nav class="navbar navbar-expand-lg fixed-top navbar-light bg-white border-bottom shadow-sm" style="z-index:9999;">
   <div class="container-fluid">
-
-    <!-- Logo -->
-    <a class="navbar-brand fw-bold text-white fs-4" href="index.html">
-      Thrift It
+    <a class="navbar-brand d-flex align-items-center py-2" href="index.html">
+      <img src="images/thriftit-logo.png" alt="Thrift It" class="thriftit-navbar-logo">
     </a>
-
-    <!-- Toggle -->
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
-      <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+      <span class="navbar-toggler-icon"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
-
-      <!-- Links -->
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link text-white" href="index.html">Home</a></li>
-        <li class="nav-item"><a class="nav-link text-white" href="women.html">Women</a></li>
-        <li class="nav-item"><a class="nav-link text-white" href="men.html">Men</a></li>
-        <li class="nav-item"><a class="nav-link text-white" href="seller.html">Sell Your Item</a></li>
+        <li class="nav-item"><a class="nav-link" href="women.html">Woman</a></li>
+        <li class="nav-item"><a class="nav-link" href="men.html">Man</a></li>
+        <li class="nav-item"><a class="nav-link fw-semibold" href="seller.html">Sell Your Item</a></li>
       </ul>
+      <div class="d-flex align-items-center gap-3">
+        <form class="navbar-search-form" role="search" onsubmit="goToSearch(event)">
+          <input class="navbar-search-input" type="search" placeholder="Search" id="searchInput" autocomplete="off">
+          <button type="submit" class="navbar-search-btn" aria-label="Search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </button>
+        </form>
+        <a href="wishlist.html" class="wishlist-link" aria-label="Wishlist" title="Wishlist">
+          <i class="fa-solid fa-heart"></i>
+        </a>
 
-     
-
+        <a href="cart.html" class="cart-link">
+          <i class="fa-solid fa-cart-shopping"></i>
+        </a>
+        <a href="login.html" id="loginBtn" class="btn btn-outline-dark btn-sm">Login</a>
+        <a href="signup.html" id="signupBtn" class="btn btn-dark btn-sm">Sign Up</a>
+        <a href="profile.html" id="username" class="sign-link text-decoration-none align-middle" style="display:none;"></a>
+      </div>
     </div>
   </div>
-
 </nav>
+
+<script>
+(function () {
+  window.goToSearch = function (event) {
+    event.preventDefault();
+    var input = document.getElementById("searchInput").value;
+    window.location.href = "search.html?query=" + encodeURIComponent(input);
+  };
+
+  var cu = JSON.parse(localStorage.getItem("currentUser"));
+  var loginBtn = document.getElementById("loginBtn");
+  var signupBtn = document.getElementById("signupBtn");
+  var username = document.getElementById("username");
+
+  if (cu) {
+    loginBtn.style.display = "none";
+    signupBtn.style.display = "none";
+    username.style.display = "inline-block";
+    username.innerText = "Hi, " + cu.name;
+  } else {
+    loginBtn.style.display = "inline-block";
+    signupBtn.style.display = "inline-block";
+    username.style.display = "none";
+  }
+})();
+</script>
 
 
 
@@ -109,6 +143,15 @@
 <!-- PRODUCT NAME -->
 <input class="form-control mb-2" id="productName" placeholder="Product Name" required>
 
+<!-- BRAND -->
+<input class="form-control mb-2" id="productBrand" placeholder="Brand" autocomplete="organization" required>
+
+<!-- DESCRIPTION -->
+<textarea class="form-control mb-2" id="productDescription" rows="3" placeholder="Description" required></textarea>
+
+<!-- MATERIAL -->
+<input class="form-control mb-2" id="productMaterial" placeholder="Material (e.g. Cotton, Leather)" required>
+
 <!-- CATEGORY -->
 <select class="form-select mb-2" id="productCategory" required>
   <option value="">Choose Category</option>
@@ -123,18 +166,18 @@
   <option value="skirts">Skirts</option>
 </select>
 
-<!-- GENDER -->
+<!-- GENDER: display Woman/Man; values male/female for API -->
 <select class="form-select mb-2" id="productGender" required>
   <option value="">Choose Gender</option>
-  <option value="Men">Men</option>
-  <option value="Women">Women</option>
+  <option value="female">Woman</option>
+  <option value="male">Man</option>
 </select>
 
-<!-- CONDITION -->
+<!-- CONDITION: labels new/used; values new | used -->
 <select class="form-select mb-2" id="productCondition" required>
   <option value="">Choose Condition</option>
-  <option value="New">New</option>
-  <option value="Used">Used</option>
+  <option value="new">new</option>
+  <option value="used">used</option>
 </select>
 
 <!-- PRICE -->
@@ -151,8 +194,11 @@
 <!-- EMAIL -->
 <input class="form-control mb-2" id="sellerEmail" readonly>
 
-<!-- IMAGES -->
-<input type="file" class="form-control mb-3" id="productImages" multiple required>
+<!-- IMAGES (exactly 2, images only) -->
+<label class="form-label mb-1 text-white-50 small">Image 1</label>
+<input type="file" class="form-control mb-2" id="productImage1" accept="image/*" required>
+<label class="form-label mb-1 text-white-50 small">Image 2</label>
+<input type="file" class="form-control mb-3" id="productImage2" accept="image/*" required>
 
 <button class="btn btn-dark w-100">Submit</button>
 
@@ -204,20 +250,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (clothes.includes(value)) {
       size.disabled = false;
-      ["XS","S","M","L","XL","XXL","XXXL"].forEach(s => {
-        size.innerHTML += `<option value="${s}">${s}</option>`;
+      ["xs", "s", "m", "l", "xl", "xxl", "xxxl"].forEach(function (k) {
+        size.innerHTML += `<option value="${k}">${k}</option>`;
       });
     }
 
     else if (value === "shoes") {
       size.disabled = false;
-      for (let i = 36; i <= 45; i++) {
+      for (let i = 36; i <= 48; i++) {
         size.innerHTML += `<option value="${i}">${i}</option>`;
       }
     }
 
     else if (value === "bags") {
-      size.innerHTML = `<option value="no size">No size required</option>`;
+      size.innerHTML = `<option value="m">one size (m)</option>`;
       size.disabled = true;
     }
 
@@ -231,57 +277,219 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
-// ================= SUBMIT =================
+// ================= SUBMIT (API) =================
 document.getElementById("sellerForm").addEventListener("submit", function(e){
 e.preventDefault();
 
-let imagesInput = document.getElementById("productImages");
+var file1 = document.getElementById("productImage1").files[0];
+var file2 = document.getElementById("productImage2").files[0];
 
-// 🔥 minimum 2 images
-if(imagesInput.files.length < 2){
-  showToast("Upload at least 2 images ❌");
+if (!file1 || !file2) {
+  showToast("Please add both images ❌");
   return;
 }
 
-let images = [];
-
-for(let i=0;i<imagesInput.files.length;i++){
-
-  let reader = new FileReader();
-
-  reader.onload = function(e){
-
-    images.push(e.target.result);
-
-    if(images.length === imagesInput.files.length){
-
-      let products = JSON.parse(localStorage.getItem("products")) || [];
-
-      products.push({
-  id: Date.now(),
-  name: document.getElementById("productName").value.trim(),
-  category: document.getElementById("productCategory").value.trim(),
-  gender: document.getElementById("productGender").value.trim(),
-  condition: document.getElementById("productCondition").value,
-  price: document.getElementById("productPrice").value,
-  color: document.getElementById("productColor").value.trim(),
-  size: document.getElementById("productSize").value,
-  email: currentUser.email,
-  images: images,
-  status: "pending"
-});
-
-      localStorage.setItem("products", JSON.stringify(products));
-
-      showToast("Product submitted successfully 🎉");
-
-      sellerForm.reset();
-      document.getElementById("sellerEmail").value = currentUser.email;
-    }
-  }
-
-  reader.readAsDataURL(imagesInput.files[i]);
+function isImageFile(file) {
+  return file && typeof file.type === "string" && file.type.indexOf("image/") === 0;
 }
+
+if (!isImageFile(file1) || !isImageFile(file2)) {
+  showToast("Only image files are allowed ❌");
+  return;
+}
+
+/** Resize + JPEG encode so JSON body stays under typical server limits (base64 is ~33% larger than raw). */
+function compressImageFile(file, maxSide, jpegQuality) {
+  return new Promise(function (resolve, reject) {
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+    img.onload = function () {
+      URL.revokeObjectURL(url);
+      var w = img.naturalWidth;
+      var h = img.naturalHeight;
+      if (!w || !h) {
+        reject(new Error("dims"));
+        return;
+      }
+      var scale = 1;
+      if (w > maxSide || h > maxSide) {
+        scale = Math.min(maxSide / w, maxSide / h);
+      }
+      var tw = Math.max(1, Math.round(w * scale));
+      var th = Math.max(1, Math.round(h * scale));
+      var canvas = document.createElement("canvas");
+      canvas.width = tw;
+      canvas.height = th;
+      var ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, tw, th);
+      try {
+        resolve(canvas.toDataURL("image/jpeg", jpegQuality));
+      } catch (err) {
+        reject(err);
+      }
+    };
+    img.onerror = function () {
+      URL.revokeObjectURL(url);
+      reject(new Error("load"));
+    };
+    img.src = url;
+  });
+}
+
+/** Step down size/quality until each base64 string fits budget (handles strict Express/nginx limits). */
+var COMPRESS_STEPS = [
+  [800, 0.70], [720, 0.70], [720, 0.62], [640, 0.62], [640, 0.55],
+  [560, 0.55], [560, 0.48], [480, 0.48], [480, 0.42], [420, 0.42],
+  [380, 0.38], [340, 0.36], [300, 0.34], [280, 0.32], [260, 0.30]
+];
+
+function compressImageUnderBudget(file, maxChars) {
+  var i = 0;
+  function next() {
+    if (i >= COMPRESS_STEPS.length) {
+      return compressImageFile(file, 240, 0.28);
+    }
+    var step = COMPRESS_STEPS[i++];
+    return compressImageFile(file, step[0], step[1]).then(function (dataUrl) {
+      if (dataUrl.length <= maxChars) return dataUrl;
+      return next();
+    });
+  }
+  function hardCap(url) {
+    if (url.length <= maxChars) return Promise.resolve(url);
+    return compressImageFile(file, 200, 0.24).then(function (u2) {
+      if (u2.length <= maxChars) return u2;
+      return compressImageFile(file, 160, 0.20);
+    });
+  }
+  return next().then(hardCap);
+}
+
+var maxImageChars =
+  typeof API_LISTING_MAX_IMAGE_CHARS !== "undefined" &&
+  typeof API_LISTING_MAX_IMAGE_CHARS === "number"
+    ? API_LISTING_MAX_IMAGE_CHARS
+    : 220000;
+
+Promise.all([
+  compressImageUnderBudget(file1, maxImageChars),
+  compressImageUnderBudget(file2, maxImageChars)
+])
+  .then(function (images) {
+    return (async function submitListing() {
+      try {
+        var imgs = (images || []).filter(function (u) {
+          return (
+            typeof u === "string" &&
+            u.length > 0 &&
+            u.indexOf("data:image") === 0
+          );
+        });
+        if (imgs.length === 0) {
+          showToast("Images did not encode — use JPG or PNG and try again ❌");
+          return;
+        }
+
+        var catSlug = document.getElementById("productCategory").value.trim().toLowerCase();
+        var genderVal = document.getElementById("productGender").value.trim();
+
+        var SUB_LABEL = {
+          pants: "Pants",
+          jackets: "Jackets",
+          tops: "Tops",
+          shirts: "Shirts",
+          dresses: "Dresses",
+          sweatshirt: "Sweatshirt",
+          shoes: "Shoes",
+          bags: "Bags",
+          skirts: "Skirts"
+        };
+
+        /** API: categoryid OR (parentRoot + subcategoryName|productCategory) */
+        var parentRoot =
+          typeof API_LISTING_PARENT_ROOT === "string" &&
+          API_LISTING_PARENT_ROOT.trim()
+            ? API_LISTING_PARENT_ROOT.trim()
+            : genderVal === "female"
+              ? "Women"
+              : "Men";
+        var subName = SUB_LABEL[catSlug] || catSlug;
+
+        var sizeRaw = document.getElementById("productSize").value.trim();
+        var sizeOut = sizeRaw;
+        if (/^\d+$/.test(sizeRaw)) {
+          sizeOut = String(parseInt(sizeRaw, 10));
+        } else {
+          sizeOut = sizeRaw.toLowerCase().replace(/\s+/g, "");
+        }
+
+        function dataURLToBlob(dataURL) {
+          var parts = String(dataURL).split(",");
+          var mime =
+            (parts[0].match(/:(.*?);/) || [])[1] || "image/jpeg";
+          var bin = atob(parts[1]);
+          var len = bin.length;
+          var arr = new Uint8Array(len);
+          while (len--) arr[len] = bin.charCodeAt(len);
+          return new Blob([arr], { type: mime });
+        }
+
+        var payload = {
+          name: document.getElementById("productName").value.trim(),
+          brand: document.getElementById("productBrand").value.trim(),
+          description: document.getElementById("productDescription").value.trim(),
+          material: document.getElementById("productMaterial").value.trim(),
+          parentRoot: parentRoot,
+          subcategoryName: subName,
+          productCategory: catSlug,
+          category: catSlug,
+          gender: genderVal,
+          condition: document.getElementById("productCondition").value.trim(),
+          price: document.getElementById("productPrice").value,
+          color: document.getElementById("productColor").value.trim(),
+          size: sizeOut,
+          sellerEmail: currentUser.email,
+          email: currentUser.email,
+          status: "pending"
+        };
+
+        if (
+          typeof API_CATEGORY_IDS !== "undefined" &&
+          API_CATEGORY_IDS &&
+          typeof API_CATEGORY_IDS === "object" &&
+          API_CATEGORY_IDS[catSlug]
+        ) {
+          var cid = String(API_CATEGORY_IDS[catSlug]);
+          payload.categoryid = cid;
+          payload.categoryId = cid;
+        }
+
+        var useMultipart =
+          typeof API_PRODUCTS_USE_MULTIPART === "undefined" ||
+          API_PRODUCTS_USE_MULTIPART;
+
+        if (useMultipart && imgs.length > 0) {
+          var blobs = imgs.map(function (u) {
+            return dataURLToBlob(u);
+          });
+          await createProductListing(payload, blobs);
+        } else {
+          payload.images = imgs;
+          payload.image = imgs[0];
+          await createProductListing(payload);
+        }
+        showToast("Product submitted successfully 🎉");
+        document.getElementById("sellerForm").reset();
+        document.getElementById("sellerEmail").value = currentUser.email;
+      } catch (err) {
+        console.error(err);
+        showToast((err && err.message) || "Submit failed — check API route / fields");
+      }
+    })();
+  })
+  .catch(function () {
+    showToast("Could not process an image — use JPG or PNG, or try a smaller photo ❌");
+  });
 
 });
 
