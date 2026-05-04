@@ -260,6 +260,15 @@
   async function removeCartLine(lineId, productId) {
     var pid = String(productId || "");
     var lid = lineId != null ? String(lineId) : "";
+    // Backend: DELETE /api/carts/:productId
+    if (pid && /^[a-f0-9]{24}$/i.test(pid)) {
+      try {
+        return await apiRequest(
+          "DELETE",
+          cartPath() + "/" + encodeURIComponent(pid)
+        );
+      } catch (e0) {}
+    }
     if (lid && lid.length > 4) {
       try {
         return await apiRequest(
@@ -300,6 +309,15 @@
   async function removeWishlistLine(lineId, productId) {
     var pid = String(productId || "");
     var lid = lineId != null ? String(lineId) : "";
+    // Backend: DELETE /api/wishlist/:productId
+    if (pid && /^[a-f0-9]{24}$/i.test(pid)) {
+      try {
+        return await apiRequest(
+          "DELETE",
+          wishlistPath() + "/" + encodeURIComponent(pid)
+        );
+      } catch (e0) {}
+    }
     if (lid && lid.length > 4) {
       try {
         return await apiRequest(

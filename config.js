@@ -2,7 +2,7 @@
  * Local dev uses your machine. Production (e.g. *.vercel.app) uses your deployed API — HTTPS only.
  * Put your live backend URL here (Render, Railway, Fly.io, or an API deployed on Vercel).
  */
-const API_BASE_PRODUCTION = "https://YOUR-BACKEND-URL";
+const API_BASE_PRODUCTION = "https://node-js-project-mu.vercel.app";
 
 const API_BASE =
   typeof location !== "undefined" &&
@@ -47,8 +47,10 @@ const API_REGISTER_PATH = "/api/users/register";
 const API_PRODUCTS_PATH = "/api/products";
 /** Place order */
 const API_ORDERS_PATH = "/api/orders";
-/** Shopping cart — GET list, DELETE clear; add/remove paths below */
-const API_CART_PATH = "/api/cart";
+/** Shopping cart — GET list, DELETE clear; add/remove paths below (backend uses /api/carts) */
+const API_CART_PATH = "/api/carts";
+/** POST add item — same as base path on this backend (not /add) */
+const API_CART_ADD_PATH = "/api/carts";
 /**
  * Wishlist (auth required). Frontend expects:
  *   GET  {API_WISHLIST_PATH}           — list entries (array or { items: [...] }, products may be populated like cart)
@@ -58,6 +60,8 @@ const API_CART_PATH = "/api/cart";
  * Override paths below if your backend uses different URLs.
  */
 const API_WISHLIST_PATH = "/api/wishlist";
+/** POST add — backend is POST /api/wishlist (not /add) */
+const API_WISHLIST_ADD_PATH = "/api/wishlist";
 
 /**
  * Authenticated user's reviews — e.g. reviews they wrote after purchase,
