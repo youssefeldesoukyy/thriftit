@@ -1,0 +1,11 @@
+{
+  "name": "thriftit",
+  "private": true,
+  "scripts": {
+    "start": "http-server . -p 5173 -c-1 -P http://127.0.0.1:4000",
+    "seller": "http-server . -p 5173 -c-1 -P http://127.0.0.1:4000 -o /seller.html"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

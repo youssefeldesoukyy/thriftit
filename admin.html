@@ -3,163 +3,460 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <title>Admin — Thrift It</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
   <link rel="stylesheet" href="style.css">
   <script src="config.js"></script>
-  <script src="products-api.js"></script>
-  <script src="app-api.js"></script>
+  <script src="auth-api.js?v=4"></script>
+  <script src="products-api.js?v=7"></script>
+  <script src="gallery-nav.js?v=3"></script>
+  <script src="app-api.js?v=8"></script>
 </head>
-<body>
+<body class="thriftit-admin-page">
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg fixed-top navbar-light bg-white border-bottom shadow-sm">
-  <div class="container-fluid">
-    <a class="navbar-brand d-flex align-items-center py-2" href="index.html">
+<div class="toast-container position-fixed top-0 end-0 p-3">
+  <div id="liveToast" class="toast thriftit-toast align-items-center text-bg-dark border-0">
+    <div class="d-flex">
+      <div class="toast-body" id="toast-msg"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<header class="thriftit-admin-topbar">
+  <div class="container-fluid d-flex align-items-center justify-content-between gap-3">
+    <a href="index.html" class="d-flex align-items-center gap-2 text-decoration-none">
       <img src="images/thriftit-logo.png" alt="Thrift It" class="thriftit-navbar-logo">
+      <span class="thriftit-admin-topbar__badge">Admin</span>
     </a>
+    <div class="d-flex align-items-center gap-2">
+      <span class="thriftit-admin-topbar__user" id="admin-user-label"></span>
+      <a href="index.html" class="btn btn-sm btn-outline-dark">Shop</a>
+      <button type="button" class="btn btn-sm btn-dark" id="adminLogoutBtn">Log out</button>
+    </div>
+  </div>
+</header>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+<main class="thriftit-admin-main container-fluid">
+  <div id="admin-denied" class="thriftit-admin-denied d-none">
+    <i class="fa-solid fa-lock" aria-hidden="true"></i>
+    <h1>Admin access required</h1>
+    <p id="admin-denied-msg">Sign in with an administrator account to review seller listings.</p>
+    <a href="login.html" class="thriftit-bag-btn thriftit-bag-btn--primary">Go to login</a>
+  </div>
 
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="women.html">Woman</a></li>
-        <li class="nav-item"><a class="nav-link" href="men.html">Man</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Shipping</a></li>
-        <li class="nav-item"><a class="nav-link" href="seller.html">Sell Your Item</a></li>
-      </ul>
+  <div id="admin-app" class="d-none">
+    <div class="thriftit-admin-hero">
+      <h1 class="thriftit-admin-hero__title">Seller listings</h1>
+      <p class="thriftit-admin-hero__sub">
+        Approve or reject items sellers want to list on the shop. Buying and checkout do not need admin approval.
+      </p>
+    </div>
 
-      <div class="d-flex align-items-center gap-3">
-         <form class="navbar-search-form" role="search" onsubmit="goToSearch(event)">
-          <input class="navbar-search-input" type="search" placeholder="Search" id="searchInput" autocomplete="off">
-          <button type="submit" class="navbar-search-btn" aria-label="Search">
-            <i class="fa-solid fa-magnifying-glass"></i>
-          </button>
-        </form>
+    <section class="thriftit-admin-panel">
+      <div class="thriftit-admin-panel__head">
+        <h2>Pending listings <span class="thriftit-admin-tabs__count" id="pending-products-count">0</span></h2>
+        <button type="button" class="btn btn-sm btn-outline-dark" id="refreshListingsBtn">
+          <i class="fa-solid fa-rotate" aria-hidden="true"></i> Refresh
+        </button>
+      </div>
+      <div id="listings-loading" class="thriftit-bag-loading">
+        <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+        <p>Loading listings…</p>
+      </div>
+      <div id="pendingProducts" class="row g-4"></div>
+    </section>
+  </div>
+</main>
 
-         <a href="wishlist.html" class="wishlist-link" aria-label="Wishlist" title="Wishlist"><i class="fa-solid fa-heart"></i></a>
-
-         <a href="cart.html" class="cart-link"><i class="fa-solid fa-cart-shopping"></i></a>
-         
+<div class="modal fade" id="adminProductModal" tabindex="-1" aria-labelledby="adminProductModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content thriftit-admin-product-modal">
+      <div class="modal-header">
+        <h2 class="modal-title h5" id="adminProductModalTitle">Listing details</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-4">
+          <div class="col-md-6">
+            <div id="admin-modal-gallery" class="thriftit-admin-product-modal__gallery"></div>
+          </div>
+          <div class="col-md-6">
+            <dl id="admin-modal-details" class="thriftit-admin-product-modal__details"></dl>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer flex-wrap gap-2">
+        <button type="button" class="thriftit-bag-btn thriftit-bag-btn--primary btn-sm" id="admin-modal-approve">Approve</button>
+        <button type="button" class="thriftit-bag-btn thriftit-bag-btn--ghost btn-sm" id="admin-modal-reject">Reject</button>
+        <button type="button" class="btn btn-sm btn-dark" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
-</nav>
-
-<!-- Pending Products Section -->
-<div class="container mt-5 pt-5">
-  <h2 class="mb-2 d-inline-block">Pending Products</h2>
-  <button id="deleteApprovedBtn" class="btn btn-dark ms-3 mb-4">Delete All Approved Products</button>
-
-  <div id="pendingProducts" class="row"></div>
 </div>
 
-<script>
-const pendingContainer = document.getElementById('pendingProducts');
-
-async function loadPendingProducts() {
-  pendingContainer.innerHTML = "<p class='text-muted'>Loading…</p>";
-  try {
-    const products = await fetchProductsMerged();
-    const pendingProducts = products.filter(
-      (p) => (p.status || "").toLowerCase() === "pending"
-    );
-
-    pendingContainer.innerHTML = "";
-
-    if (pendingProducts.length === 0) {
-      pendingContainer.innerHTML = "<p class='text-muted'>No pending products.</p>";
-      return;
-    }
-
-    pendingProducts.forEach((product) => {
-      const col = document.createElement("div");
-      col.className = "col-md-4 mb-4";
-      const safeId = String(product.id).replace(/[^a-zA-Z0-9_-]/g, "");
-      col.innerHTML = `
-      <div class="card">
-        <div id="carousel-${safeId}" class="carousel slide" data-bs-interval="false">
-          <div class="carousel-inner">
-            ${(product.images || []).map((img, index) => `
-              <div class="carousel-item ${index === 0 ? "active" : ""}">
-                <img src="${img}" class="d-block w-100" alt="">
-              </div>
-            `).join("")}
-          </div>
-          <button class="carousel-control-prev" type="button" data-bs-target="#carousel-${safeId}" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon"></span>
-          </button>
-          <button class="carousel-control-next" type="button" data-bs-target="#carousel-${safeId}" data-bs-slide="next">
-            <span class="carousel-control-next-icon"></span>
-          </button>
-        </div>
-        <div class="card-body">
-          <h5>${product.name}</h5>
-          ${product.brand ? `<p class="text-muted small mb-1">Brand: ${product.brand}</p>` : ""}
-          <p>${product.price} EGP</p>
-          <p>Color: ${product.color}</p>
-          <p>Size: ${product.size}</p>
-          <p>Condition: ${product.condition}</p>
-          <p>Seller: ${product.email || product.sellerEmail || "—"}</p>
-          <button class="btn btn-success me-2 approve-btn">Approve</button>
-          <button class="btn btn-danger reject-btn">Reject</button>
-        </div>
-      </div>
-    `;
-      pendingContainer.appendChild(col);
-
-      col.querySelector(".approve-btn").addEventListener("click", () =>
-        handleAction(product.id, "approved")
-      );
-      col.querySelector(".reject-btn").addEventListener("click", () =>
-        handleAction(product.id, "rejected")
-      );
-    });
-  } catch (e) {
-    console.error(e);
-    pendingContainer.innerHTML =
-      "<p class='text-danger'>Could not load pending products. Open console.</p>";
-  }
-}
-
-async function handleAction(productId, action) {
-  try {
-    if (action === "approved") {
-      await updateProductStatus(productId, "approved");
-    } else {
-      await updateProductStatus(productId, "rejected");
-    }
-    await loadPendingProducts();
-  } catch (e) {
-    alert((e && e.message) || "Action failed — check PATCH /api/products/:id on backend");
-  }
-}
-
-document.getElementById("deleteApprovedBtn").addEventListener("click", async () => {
-  if (!confirm("Delete ALL approved products from the server?")) return;
-  try {
-    const products = await fetchProductsMerged();
-    const approved = products.filter(
-      (p) => (p.status || "").toLowerCase() === "approved"
-    );
-    for (const p of approved) {
-      await deleteProduct(p.id);
-    }
-    alert("Removed " + approved.length + " approved listing(s).");
-    await loadPendingProducts();
-  } catch (e) {
-    alert((e && e.message) || "Delete failed");
-  }
-});
-
-loadPendingProducts();
-</script>
+<div id="admin-image-lightbox" class="thriftit-image-lightbox d-none" aria-hidden="true">
+  <button type="button" class="thriftit-image-lightbox__close" aria-label="Close enlarged photo">&times;</button>
+  <button type="button" class="thriftit-image-lightbox__nav thriftit-image-lightbox__nav--prev" aria-label="Previous photo">
+    <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+  </button>
+  <img class="thriftit-image-lightbox__img" alt="" />
+  <button type="button" class="thriftit-image-lightbox__nav thriftit-image-lightbox__nav--next" aria-label="Next photo">
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+  </button>
+  <p class="thriftit-image-lightbox__count"></p>
+</div>
 
 <script src="script/bootstrap.min.js"></script>
-<script src="index.js"></script>
+<script>
+function placeholderImg() {
+  return (
+    "data:image/svg+xml," +
+    encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">' +
+        '<rect fill="%23e8e4dc" width="100%" height="100%"/>' +
+        '<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" ' +
+        'fill="%235a5345" font-family="sans-serif" font-size="16">No photo</text></svg>'
+    )
+  );
+}
+
+function resolveAdminImg(img) {
+  if (typeof resolveProductImageUrl === "function") {
+    return resolveProductImageUrl(img);
+  }
+  var raw = typeof img === "string" ? img.trim() : "";
+  if (!raw) return "";
+  var base =
+    typeof API_BASE === "string" && API_BASE
+      ? String(API_BASE).replace(/\/$/, "")
+      : "http://localhost:4000";
+  if (/^https?:\/\//i.test(raw) || /^data:/i.test(raw)) return raw;
+  if (raw.charAt(0) === "/") return base + raw;
+  if (/^uploads\//i.test(raw)) return base + "/" + raw.replace(/^\/+/, "");
+  return base + "/uploads/" + raw.replace(/^\/+/, "");
+}
+
+function productImageList(product) {
+  var urls = (product.images || [])
+    .map(resolveAdminImg)
+    .filter(function (u) {
+      return u && String(u).trim();
+    });
+  if (typeof uniqueImageUrls === "function") {
+    urls = uniqueImageUrls(urls);
+  } else {
+    var seen = {};
+    urls = urls.filter(function (u) {
+      if (seen[u]) return false;
+      seen[u] = true;
+      return true;
+    });
+  }
+  return urls.length ? urls : [placeholderImg()];
+}
+
+var adminImageLightbox = createThriftitImageLightbox("admin-image-lightbox");
+
+function openAdminImageLightbox(urls, startIndex) {
+  if (adminImageLightbox) adminImageLightbox.open(urls, startIndex);
+}
+
+function closeAdminImageLightbox() {
+  if (adminImageLightbox) adminImageLightbox.close();
+}
+
+function mountAdminCarousel(carouselEl, urls, imgClass) {
+  mountThriftitGallery(carouselEl, urls, imgClass, openAdminImageLightbox);
+}
+
+function formatAdminGender(g) {
+  var s = String(g || "").toLowerCase().trim();
+  if (s === "female") return "Women";
+  if (s === "male") return "Men";
+  return g && String(g).trim() ? String(g).trim() : "—";
+}
+
+function formatAdminCategory(p) {
+  var raw =
+    (p.categoryDisplay && String(p.categoryDisplay).trim()) ||
+    (p.subcategory && String(p.subcategory).trim()) ||
+    (p.category && String(p.category).trim()) ||
+    "";
+  if (!raw) return "—";
+  return raw.replace(/[-_]/g, " ").replace(/\b\w/g, function (c) {
+    return c.toUpperCase();
+  });
+}
+
+function detailRow(label, value) {
+  return (
+    '<div class="thriftit-admin-product-modal__row">' +
+    "<dt>" +
+    escapeHtml(label) +
+    "</dt><dd>" +
+    escapeHtml(value != null && String(value).trim() !== "" ? String(value).trim() : "—") +
+    "</dd></div>"
+  );
+}
+
+var adminModalProduct = null;
+var adminProductModal = null;
+
+async function openAdminProductModal(product) {
+  var viewProduct = product;
+  if (product && product.id && typeof fetchProductById === "function") {
+    try {
+      var fresh = await fetchProductById(product.id);
+      if (fresh) viewProduct = fresh;
+    } catch (err) {
+      console.warn("Admin: could not refresh product images", err);
+    }
+  }
+
+  adminModalProduct = viewProduct;
+  var titleEl = document.getElementById("adminProductModalTitle");
+  var galleryEl = document.getElementById("admin-modal-gallery");
+  var detailsEl = document.getElementById("admin-modal-details");
+  if (!titleEl || !galleryEl || !detailsEl) return;
+
+  titleEl.textContent = viewProduct.name || viewProduct.description || "Listing";
+
+  var imgs = productImageList(viewProduct);
+  var safeId = "modal-" + String(viewProduct.id).replace(/[^a-zA-Z0-9_-]/g, "");
+
+  galleryEl.innerHTML =
+    '<div id="' +
+    safeId +
+    '" class="carousel slide thriftit-admin-product-carousel">' +
+    '<div class="carousel-inner"></div>' +
+    galleryNavControlsHtml(imgs.length > 1) +
+    "</div>";
+
+  mountAdminCarousel(
+    document.getElementById(safeId),
+    imgs,
+    "d-block w-100 thriftit-admin-product-modal__img"
+  );
+
+  var sellerLine = viewProduct.sellerName || viewProduct.sellerEmail || "—";
+  if (viewProduct.sellerName && viewProduct.sellerEmail) {
+    sellerLine = viewProduct.sellerName + " (" + viewProduct.sellerEmail + ")";
+  }
+
+  detailsEl.innerHTML =
+    detailRow("Brand", viewProduct.brand) +
+    detailRow("Category", formatAdminCategory(viewProduct)) +
+    detailRow("Gender", formatAdminGender(viewProduct.gender)) +
+    detailRow("Size", viewProduct.size) +
+    detailRow("Color", viewProduct.color) +
+    detailRow("Condition", viewProduct.condition) +
+    detailRow("Material", viewProduct.material) +
+    detailRow("Price", viewProduct.price != null ? viewProduct.price + " EGP" : "—") +
+    detailRow("Status", viewProduct.status || "pending") +
+    detailRow("Seller", sellerLine) +
+    '<div class="thriftit-admin-product-modal__row thriftit-admin-product-modal__row--block">' +
+    "<dt>Description</dt><dd>" +
+    escapeHtml(viewProduct.description || viewProduct.name || "—") +
+    "</dd></div>";
+
+  if (!adminProductModal) {
+    adminProductModal = new bootstrap.Modal(document.getElementById("adminProductModal"));
+  }
+  adminProductModal.show();
+}
+
+var currentUser = readStoredUser();
+var adminOk =
+  typeof isAdminUser === "function"
+    ? isAdminUser(currentUser)
+    : currentUser && String(currentUser.role || "").toUpperCase() === "ADMIN";
+
+if (!isLoggedIn() || !adminOk) {
+  document.getElementById("admin-denied").classList.remove("d-none");
+  var deniedMsg = document.getElementById("admin-denied-msg");
+  if (deniedMsg && isLoggedIn()) {
+    deniedMsg.textContent =
+      "You are signed in as " +
+      (currentUser.email || "this account") +
+      ", but it does not have admin access. Set role to ADMIN in the database, then log out and log in again.";
+  }
+} else {
+  document.getElementById("admin-app").classList.remove("d-none");
+  document.getElementById("admin-user-label").textContent =
+    "Hi, " + (typeof userDisplayName === "function" ? userDisplayName(currentUser) : "Admin");
+
+  document.getElementById("adminLogoutBtn").addEventListener("click", function () {
+    if (typeof authLogout === "function") authLogout();
+    else window.location.href = "login.html";
+  });
+
+  document.getElementById("adminProductModal").addEventListener("hidden.bs.modal", function () {
+    closeAdminImageLightbox();
+  });
+
+  var pendingContainer = document.getElementById("pendingProducts");
+  var loadingEl = document.getElementById("listings-loading");
+
+  function toastForEmail(res, okMsg) {
+    var wrap = res && res.data ? res.data : res;
+    var email = wrap && wrap.email ? wrap.email : null;
+    if (email && email.sent) {
+      showToast(okMsg + " — seller emailed");
+    } else if (email && email.logged) {
+      showToast(
+        okMsg + " — email logged in server console (configure SMTP or Resend in .env)"
+      );
+    } else if (email && email.error) {
+      showToast(okMsg + " — email failed: " + email.error);
+    } else if (email && email.reason === "no_email") {
+      showToast(okMsg + " — seller has no email on file");
+    } else {
+      showToast(okMsg);
+    }
+  }
+
+  async function approveListing(product) {
+    var res;
+    if (typeof approveProductListing === "function") {
+      res = await approveProductListing(product.id);
+    } else {
+      res = await updateProductStatus(product.id, "approved");
+    }
+    toastForEmail(res, "Listing approved — now on the shop");
+    if (adminProductModal) adminProductModal.hide();
+    await loadPendingProducts();
+  }
+
+  async function rejectListing(product) {
+    if (!confirm("Reject and remove this listing? The seller will be notified by email.")) {
+      return;
+    }
+    var res = await deleteProduct(product.id);
+    toastForEmail(res, "Listing rejected");
+    if (adminProductModal) adminProductModal.hide();
+    await loadPendingProducts();
+  }
+
+  document.getElementById("admin-modal-approve").addEventListener("click", async function () {
+    if (!adminModalProduct) return;
+    try {
+      await approveListing(adminModalProduct);
+    } catch (err) {
+      showToast((err && err.message) || "Approve failed");
+    }
+  });
+
+  document.getElementById("admin-modal-reject").addEventListener("click", async function () {
+    if (!adminModalProduct) return;
+    try {
+      await rejectListing(adminModalProduct);
+    } catch (err) {
+      showToast((err && err.message) || "Reject failed");
+    }
+  });
+
+  async function loadPendingProducts() {
+    loadingEl.classList.remove("d-none");
+    pendingContainer.innerHTML = "";
+    try {
+      var products =
+        typeof fetchAdminPendingListings === "function"
+          ? await fetchAdminPendingListings()
+          : [];
+      loadingEl.classList.add("d-none");
+      document.getElementById("pending-products-count").textContent = String(
+        products.length
+      );
+
+      if (!products.length) {
+        pendingContainer.innerHTML =
+          '<div class="col-12"><p class="text-muted mb-0">No pending listings — new seller submissions will appear here.</p></div>';
+        return;
+      }
+
+      products.forEach(function (product) {
+        var col = document.createElement("div");
+        col.className = "col-md-6 col-xl-4";
+        var safeId = String(product.id).replace(/[^a-zA-Z0-9_-]/g, "");
+        var imgs = productImageList(product);
+
+        col.innerHTML =
+          '<article class="thriftit-admin-product-card">' +
+          '<div id="carousel-' +
+          safeId +
+          '" class="carousel slide thriftit-admin-product-carousel">' +
+          '<div class="carousel-inner"></div>' +
+          galleryNavControlsHtml(imgs.length > 1) +
+          "</div>" +
+          '<div class="thriftit-admin-product-card__body">' +
+          "<h3>" +
+          escapeHtml(product.name || product.description || "Listing") +
+          "</h3>" +
+          (product.brand
+            ? '<p class="text-muted small mb-1">' + escapeHtml(product.brand) + "</p>"
+            : "") +
+          "<p><strong>" +
+          escapeHtml(String(product.price)) +
+          " EGP</strong></p>" +
+          '<p class="small text-muted mb-2">' +
+          escapeHtml(product.size || "—") +
+          " · " +
+          escapeHtml(product.condition || "—") +
+          (product.color ? " · " + escapeHtml(product.color) : "") +
+          "</p>" +
+          (product.description
+            ? '<p class="small">' + escapeHtml(product.description) + "</p>"
+            : "") +
+          '<div class="thriftit-admin-product-card__actions">' +
+          '<button type="button" class="btn btn-sm btn-outline-dark view-btn">View</button>' +
+          '<button type="button" class="thriftit-bag-btn thriftit-bag-btn--primary btn-sm approve-btn">Approve</button>' +
+          '<button type="button" class="thriftit-bag-btn thriftit-bag-btn--ghost btn-sm reject-btn">Reject</button>' +
+          "</div></div></article>";
+
+        pendingContainer.appendChild(col);
+
+        mountAdminCarousel(
+          document.getElementById("carousel-" + safeId),
+          imgs,
+          "d-block w-100 thriftit-admin-product-card__img"
+        );
+
+        col.querySelector(".view-btn").addEventListener("click", function () {
+          openAdminProductModal(product);
+        });
+
+        col.querySelector(".approve-btn").addEventListener("click", async function () {
+          try {
+            await approveListing(product);
+          } catch (err) {
+            showToast((err && err.message) || "Approve failed");
+          }
+        });
+
+        col.querySelector(".reject-btn").addEventListener("click", async function () {
+          try {
+            await rejectListing(product);
+          } catch (err) {
+            showToast((err && err.message) || "Reject failed");
+          }
+        });
+      });
+    } catch (e) {
+      console.error(e);
+      loadingEl.classList.add("d-none");
+      pendingContainer.innerHTML =
+        '<div class="col-12"><p class="text-danger">Could not load listings. Is the backend running?</p></div>';
+      showToast((e && e.message) || "Could not load listings");
+    }
+  }
+
+  document.getElementById("refreshListingsBtn").addEventListener("click", loadPendingProducts);
+  loadPendingProducts();
+}
+</script>
+<script src="footer.js"></script>
 </body>
 </html>

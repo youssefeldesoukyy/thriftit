@@ -9,53 +9,37 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <title>Your profile — Thrift It</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-     <style>
-    body {
-  margin: 0;
-  min-height: 100vh;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.8),
-    rgba(0, 0, 0, 0.2)
-  );
-}
-    </style>
     <script src="config.js"></script>
-    <script src="app-api.js"></script>
+    <script src="auth-api.js?v=3"></script>
+    <script src="app-api.js?v=10"></script>
   </head>
 
-<body>
+<body class="thriftit-bag-page">
   <div class="toast-container position-fixed top-0 end-0 p-3">
-
-  <div id="liveToast" class="toast align-items-center text-bg-dark border-0">
-    <div class="d-flex">
-      <div class="toast-body" id="toast-msg"></div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    <div id="liveToast" class="toast thriftit-toast align-items-center text-bg-dark border-0">
+      <div class="d-flex">
+        <div class="toast-body" id="toast-msg"></div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
     </div>
   </div>
 
-</div>
-
-<nav class="navbar navbar-expand-lg fixed-top navbar-light bg-white border-bottom shadow-sm" style="z-index:9999;">
-
+<nav class="navbar navbar-expand-lg fixed-top navbar-light thriftit-navbar" style="z-index:9999;">
   <div class="container-fluid">
-
     <a class="navbar-brand d-flex align-items-center py-2" href="index.html">
       <img src="images/thriftit-logo.png" alt="Thrift It" class="thriftit-navbar-logo">
     </a>
-
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
       <span class="navbar-toggler-icon"></span>
     </button>
-
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
-
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="women.html">Woman</a></li>
-        <li class="nav-item"><a class="nav-link" href="men.html">Man</a></li>
-        <li class="nav-item"><a class="nav-link" href="seller.html">Sell Your Item</a></li>
+        <li class="nav-item"><a class="nav-link" href="women.html">Women</a></li>
+        <li class="nav-item"><a class="nav-link" href="men.html">Men</a></li>
+        <li class="nav-item">
+          <a class="nav-link navbar-sell-nav" href="seller.html">Sell your item</a>
+        </li>
       </ul>
-
       <div class="d-flex align-items-center gap-3">
         <form class="navbar-search-form" role="search" onsubmit="goToSearch(event)">
           <input class="navbar-search-input" type="search" placeholder="Search" id="searchInput" autocomplete="off">
@@ -63,130 +47,141 @@
             <i class="fa-solid fa-magnifying-glass"></i>
           </button>
         </form>
-
         <a href="wishlist.html" class="wishlist-link" aria-label="Wishlist" title="Wishlist">
           <i class="fa-solid fa-heart"></i>
         </a>
-
-        <a href="cart.html" class="cart-link">
+        <a href="cart.html" class="cart-link" aria-label="Cart" title="Cart">
           <i class="fa-solid fa-cart-shopping"></i>
         </a>
-
         <a href="login.html" id="loginBtn" class="btn btn-outline-dark btn-sm">Login</a>
-        <a href="signup.html" id="signupBtn" class="btn btn-dark btn-sm">Sign Up</a>
-
+        <a href="signup.html" id="signupBtn" class="btn btn-outline-dark btn-sm">Sign Up</a>
         <a href="profile.html" id="username" class="sign-link text-decoration-none align-middle" style="display:none;" aria-current="page"></a>
       </div>
-
     </div>
   </div>
-
 </nav>
 
-<script>
-let currentUser = JSON.parse(localStorage.getItem("currentUser"));
-let loginBtn = document.getElementById("loginBtn");
-let signupBtn = document.getElementById("signupBtn");
-let usernameEl = document.getElementById("username");
-
-function logout() {
-  localStorage.removeItem("currentUser");
-  localStorage.removeItem("token");
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("jwt");
-  window.location.href = "login.html";
-}
-
-if (currentUser) {
-  loginBtn.style.display = "none";
-  signupBtn.style.display = "none";
-  usernameEl.style.display = "inline-block";
-  usernameEl.innerText = "Hi, " + currentUser.name;
-} else {
-  loginBtn.style.display = "inline-block";
-  signupBtn.style.display = "inline-block";
-  usernameEl.style.display = "none";
-}
-</script>
 <script src="script/bootstrap.min.js"></script>
 <script src="index.js"></script>
 
-<div class="container mt-5 pt-5 pb-5">
-  <h2 class="text-white mb-4">Your profile</h2>
-
-  <div class="card bg-dark text-white border border-secondary mb-4 shadow-sm">
-    <div class="card-body">
-      <h5 class="card-title">Account</h5>
-      <p id="profile-name" class="mb-1 fw-semibold"></p>
-      <p id="profile-email" class="text-white-50 small mb-0"></p>
-      <div class="mt-3 pt-3 border-top border-secondary">
-        <button type="button" id="profileLogoutBtn" class="btn btn-outline-danger btn-sm">
-          Log out
-        </button>
-      </div>
+<div class="container thriftit-page-section mt-5 pt-5 pb-5">
+  <header class="thriftit-bag-header">
+    <div class="thriftit-bag-header__icon" aria-hidden="true">
+      <i class="fa-solid fa-user"></i>
     </div>
+    <h1 class="thriftit-page-heading">Your profile</h1>
+    <p class="thriftit-bag-subtitle">Account details and your reviews</p>
+  </header>
+
+  <div class="thriftit-profile-layout">
+    <aside class="thriftit-bag-panel thriftit-profile-account">
+      <div class="thriftit-profile-avatar" aria-hidden="true">
+        <i class="fa-solid fa-user"></i>
+      </div>
+      <h2 class="thriftit-profile-name" id="profile-name"></h2>
+      <p class="thriftit-profile-email" id="profile-email"></p>
+
+      <nav class="thriftit-profile-actions" aria-label="Quick links">
+        <a href="wishlist.html"><i class="fa-solid fa-heart" aria-hidden="true"></i> Wishlist</a>
+        <a href="cart.html"><i class="fa-solid fa-cart-shopping" aria-hidden="true"></i> Cart</a>
+        <a href="seller.html"><i class="fa-solid fa-tag" aria-hidden="true"></i> Sell your item</a>
+        <a href="#orders"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Order history</a>
+      </nav>
+
+      <button type="button" id="profileLogoutBtn" class="thriftit-bag-btn thriftit-bag-btn--danger thriftit-bag-btn--block w-100">
+        <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+        Log out
+      </button>
+    </aside>
+
+    <section class="thriftit-bag-panel thriftit-profile-reviews-panel">
+      <div id="orders" class="thriftit-profile-orders-block">
+        <h2 class="thriftit-checkout-section-title">Order history</h2>
+        <p class="thriftit-profile-reviews-hint">Your previous purchases on Thrift It.</p>
+
+        <div id="orders-loading" class="thriftit-bag-loading">
+          <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+          <p>Loading orders…</p>
+        </div>
+        <div id="orders-error" class="thriftit-profile-alert d-none" role="alert"></div>
+        <div id="orders-empty" class="thriftit-bag-empty d-none">
+          <i class="fa-solid fa-box-open" aria-hidden="true"></i>
+          <p>No orders yet</p>
+          <a href="shopall.html" class="thriftit-bag-btn thriftit-bag-btn--primary mt-2">Browse shop</a>
+        </div>
+        <div id="orders-list" class="thriftit-orders-list d-none"></div>
+      </div>
+
+      <div id="leave-review" class="thriftit-profile-orders-block mt-4 pt-4 border-top">
+      <h2 class="thriftit-checkout-section-title">Rate your seller</h2>
+      <p class="thriftit-profile-reviews-hint">
+        After you receive an item, leave a rating and comment for the seller.
+      </p>
+
+      <div id="reviewable-loading" class="thriftit-bag-loading">
+        <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+        <p>Loading purchases…</p>
+      </div>
+      <div id="reviewable-empty" class="thriftit-bag-empty d-none">
+        <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
+        <p>No shipped orders ready for a review yet</p>
+      </div>
+      <div id="reviewable-list" class="thriftit-reviewable-list d-none"></div>
+
+      <h2 class="thriftit-checkout-section-title mt-4">Your reviews</h2>
+      <p id="reviews-hint" class="thriftit-profile-reviews-hint">
+        Reviews you have already submitted.
+      </p>
+
+      <div id="reviews-error" class="thriftit-profile-alert d-none" role="alert"></div>
+
+      <div id="reviews-loading" class="thriftit-bag-loading">
+        <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+        <p>Loading reviews…</p>
+      </div>
+      <div id="reviews-empty" class="thriftit-bag-empty d-none">
+        <i class="fa-regular fa-star" aria-hidden="true"></i>
+        <p>No reviews</p>
+      </div>
+      <div id="reviews-list" class="thriftit-profile-reviews-grid d-none"></div>
+      </div>
+    </section>
   </div>
-
-  <h3 class="text-white h5 mb-2">Reviews</h3>
-  <p id="reviews-hint" class="text-light small opacity-75 mb-3">
-    Reviews associated with your account (for example ratings you gave or feedback you received as a seller), if your backend exposes them at <code class="text-reset">GET</code> <span id="reviews-path-display" class="text-white-50"></span>.
-  </p>
-
-  <div id="reviews-error" class="alert alert-warning d-none" role="alert"></div>
-
-  <div id="reviews-loading" class="text-white py-3">Loading reviews…</div>
-  <p id="reviews-empty" class="text-light fst-italic d-none py-3 mb-0">No reviews to show yet.</p>
-  <div id="reviews-list" class="row g-3 d-none"></div>
 </div>
 
 <script>
-(function () {
-  if (typeof API_USER_REVIEWS_PATH !== "undefined") {
-    var el = document.getElementById("reviews-path-display");
-    if (el) el.textContent = API_USER_REVIEWS_PATH;
-  }
-})();
-
-function showToast(message) {
-  var toastEl = document.getElementById("liveToast");
-  var toastMsg = document.getElementById("toast-msg");
-  toastMsg.innerText = message;
-  var toast = new bootstrap.Toast(toastEl);
-  toast.show();
-}
-
-if (!currentUser) {
-  showToast("Please log in first");
+if (!isLoggedIn()) {
   window.location.href = "login.html";
 } else {
-  document.getElementById("profile-name").textContent = currentUser.name || "Member";
-  document.getElementById("profile-email").textContent =
-    currentUser.email || "";
+  document.getElementById("profile-name").textContent = userDisplayName(currentUser);
+  document.getElementById("profile-email").textContent = currentUser.email || "";
 
-  document.getElementById("profileLogoutBtn").addEventListener("click", logout);
-
-  function escapeHtml(s) {
-    return String(s || "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/"/g, "&quot;");
-  }
+  document.getElementById("profileLogoutBtn").addEventListener("click", function () {
+    authLogout();
+    window.location.href = "login.html";
+  });
 
   function formatStarsHtml(rating) {
     var raw = Number(rating);
     if (rating == null || !Number.isFinite(raw) || raw < 1) {
-      return '<span class="text-secondary small">No rating</span>';
+      return '<span class="profile-review-card__meta">No rating</span>';
     }
     var n = Math.max(1, Math.min(5, Math.round(raw)));
     var s = "";
     var i;
     for (i = 0; i < n; i++) {
-      s += '<i class="fa-solid fa-star text-warning" aria-hidden="true"></i>';
+      s += '<i class="fa-solid fa-star" aria-hidden="true"></i>';
     }
     for (i = n; i < 5; i++) {
-      s += '<i class="fa-regular fa-star text-secondary opacity-50" aria-hidden="true"></i>';
+      s += '<i class="fa-solid fa-star profile-star--empty" aria-hidden="true"></i>';
     }
-    return s + ' <span class="text-white-50 small ms-1">(' + n + '/5)</span>';
+    return (
+      '<div class="profile-review-card__stars">' +
+      s +
+      ' <span class="profile-review-card__meta">(' +
+      n +
+      "/5)</span></div>"
+    );
   }
 
   function formatDate(at) {
@@ -200,139 +195,313 @@ if (!currentUser) {
     });
   }
 
-  (async function loadReviews() {
+  function formatOrderStatus(status) {
+    var s = String(status || "pending").toLowerCase();
+    var labels = {
+      pending: "Pending",
+      confirmed: "Confirmed",
+      shipped: "Shipped",
+      delivered: "Delivered",
+      cancelled: "Cancelled",
+    };
+    return labels[s] || s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  async function loadOrders() {
+    var loading = document.getElementById("orders-loading");
+    var empty = document.getElementById("orders-empty");
+    var errEl = document.getElementById("orders-error");
+    var listEl = document.getElementById("orders-list");
+
+    try {
+      var orders = await getMyOrders();
+      loading.classList.add("d-none");
+      errEl.classList.add("d-none");
+      if (!orders.length) {
+        empty.classList.remove("d-none");
+        listEl.classList.add("d-none");
+        return;
+      }
+      empty.classList.add("d-none");
+      listEl.classList.remove("d-none");
+      listEl.innerHTML = "";
+
+      orders.forEach(function (order) {
+        var card = document.createElement("article");
+        card.className = "thriftit-order-card";
+        var dateLine = formatDate(order.createdAt);
+        var orderId = String(order.id || "");
+        var orderLabel =
+          orderId.length >= 6
+            ? orderId.slice(-6).toUpperCase()
+            : orderId.toUpperCase();
+        var itemsHtml = (order.items || [])
+          .map(function (item) {
+            var rawPid = item.productId ? String(item.productId).trim() : "";
+            var pid = /^[a-f0-9]{24}$/i.test(rawPid)
+              ? "product.html?id=" + encodeURIComponent(rawPid)
+              : "";
+            var name = escapeHtml(item.name);
+            var line =
+              '<li class="thriftit-order-card__item">' +
+              (pid
+                ? '<a href="' + pid + '">' + name + "</a>"
+                : "<span>" + name + "</span>") +
+              ' <span class="thriftit-order-card__price">' +
+              escapeHtml(String(item.price * (item.quantity || 1))) +
+              " EGP</span></li>";
+            return line;
+          })
+          .join("");
+
+        card.innerHTML =
+          '<div class="thriftit-order-card__head">' +
+          '<div><p class="thriftit-order-card__id">Order #' +
+          escapeHtml(orderLabel) +
+          "</p>" +
+          (dateLine
+            ? '<p class="thriftit-order-card__date">' + escapeHtml(dateLine) + "</p>"
+            : "") +
+          "</div>" +
+          '<span class="thriftit-order-status thriftit-order-status--' +
+          escapeHtml(order.status) +
+          '">' +
+          escapeHtml(formatOrderStatus(order.status)) +
+          "</span></div>" +
+          '<ul class="thriftit-order-card__items">' +
+          itemsHtml +
+          "</ul>" +
+          (order.address
+            ? '<p class="thriftit-order-card__address"><span>Deliver to</span> ' +
+              escapeHtml(order.address) +
+              "</p>"
+            : "") +
+          '<p class="thriftit-order-card__total"><span>Total</span> <strong>' +
+          escapeHtml(String(order.amount)) +
+          " EGP</strong></p>";
+
+        listEl.appendChild(card);
+      });
+
+      if (window.location.hash === "#orders") {
+        document.getElementById("orders").scrollIntoView({ behavior: "smooth" });
+      }
+    } catch (err) {
+      console.error(err);
+      loading.classList.add("d-none");
+      empty.classList.add("d-none");
+      listEl.classList.add("d-none");
+      errEl.textContent =
+        (err && err.message) ||
+        "Could not load orders. Make sure the API is running on port 4000.";
+      errEl.classList.remove("d-none");
+    }
+  }
+
+  function renderStarPicker(container) {
+    container.innerHTML = "";
+    var wrap = document.createElement("div");
+    wrap.className = "thriftit-star-picker";
+    wrap.setAttribute("role", "radiogroup");
+    wrap.setAttribute("aria-label", "Rating");
+    for (var s = 1; s <= 5; s++) {
+      (function (star) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "thriftit-star-picker__btn";
+        btn.setAttribute("data-rating", String(star));
+        btn.setAttribute("aria-label", star + " stars");
+        btn.innerHTML = '<i class="fa-solid fa-star" aria-hidden="true"></i>';
+        btn.addEventListener("click", function () {
+          wrap.querySelectorAll(".thriftit-star-picker__btn").forEach(function (b) {
+            b.classList.toggle("is-active", Number(b.getAttribute("data-rating")) <= star);
+            if (Number(b.getAttribute("data-rating")) === star) {
+              b.setAttribute("aria-pressed", "true");
+            } else {
+              b.removeAttribute("aria-pressed");
+            }
+          });
+          wrap.dataset.value = String(star);
+        });
+        wrap.appendChild(btn);
+      })(s);
+    }
+    container.appendChild(wrap);
+  }
+
+  async function loadReviewable() {
+    var loading = document.getElementById("reviewable-loading");
+    var empty = document.getElementById("reviewable-empty");
+    var listEl = document.getElementById("reviewable-list");
+
+    try {
+      var items = await getReviewablePurchases();
+      loading.classList.add("d-none");
+      if (!items.length) {
+        empty.classList.remove("d-none");
+        return;
+      }
+      empty.classList.add("d-none");
+      listEl.classList.remove("d-none");
+      listEl.innerHTML = "";
+
+      items.forEach(function (item) {
+        var card = document.createElement("article");
+        card.className = "thriftit-reviewable-card";
+        card.innerHTML =
+          '<p class="thriftit-reviewable-card__product">' +
+          escapeHtml(item.productName) +
+          "</p>" +
+          '<p class="thriftit-reviewable-card__meta">Seller · ' +
+          escapeHtml(item.sellerName) +
+          "</p>";
+
+        var starsHost = document.createElement("div");
+        starsHost.className = "thriftit-reviewable-card__stars";
+        renderStarPicker(starsHost);
+
+        var comment = document.createElement("textarea");
+        comment.className = "form-control thriftit-reviewable-card__comment";
+        comment.rows = 3;
+        comment.placeholder = "Share your experience (optional)";
+        comment.maxLength = 500;
+
+        var submitBtn = document.createElement("button");
+        submitBtn.type = "button";
+        submitBtn.className = "thriftit-bag-btn thriftit-bag-btn--primary thriftit-bag-btn--block";
+        submitBtn.innerHTML =
+          '<i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Submit review';
+
+        submitBtn.addEventListener("click", async function () {
+          var picker = starsHost.querySelector(".thriftit-star-picker");
+          var rating = picker ? Number(picker.dataset.value) : 0;
+          if (!rating || rating < 1 || rating > 5) {
+            showToast("Please choose a star rating");
+            return;
+          }
+          submitBtn.disabled = true;
+          try {
+            await submitSellerReview({
+              sellerId: item.sellerId,
+              orderId: item.orderId,
+              productId: item.productId,
+              rating: rating,
+              comment: comment.value.trim(),
+            });
+            showToast("Thank you — your review was submitted");
+            card.remove();
+            if (!listEl.children.length) {
+              listEl.classList.add("d-none");
+              empty.classList.remove("d-none");
+            }
+            loadReviews();
+          } catch (err) {
+            showToast((err && err.message) || "Could not submit review");
+            submitBtn.disabled = false;
+          }
+        });
+
+        card.appendChild(starsHost);
+        card.appendChild(comment);
+        card.appendChild(submitBtn);
+        listEl.appendChild(card);
+      });
+
+      if (window.location.hash === "#leave-review") {
+        document.getElementById("leave-review").scrollIntoView({ behavior: "smooth" });
+      }
+    } catch (err) {
+      console.error(err);
+      loading.classList.add("d-none");
+      showToast((err && err.message) || "Could not load purchases to review");
+    }
+  }
+
+  async function loadReviews() {
     var loading = document.getElementById("reviews-loading");
     var empty = document.getElementById("reviews-empty");
     var listEl = document.getElementById("reviews-list");
     var errEl = document.getElementById("reviews-error");
 
+    function showNoReviews() {
+      errEl.classList.add("d-none");
+      listEl.classList.add("d-none");
+      listEl.innerHTML = "";
+      empty.classList.remove("d-none");
+    }
+
     try {
       var reviews = await getMyReviews();
 
-      loading.classList.add("d-none");
-
       if (!reviews.length) {
-        empty.classList.remove("d-none");
+        showNoReviews();
         return;
       }
 
       empty.classList.add("d-none");
+      errEl.classList.add("d-none");
       listEl.classList.remove("d-none");
+      listEl.innerHTML = "";
 
       reviews.forEach(function (r) {
-        var prodHref = r.productId
-          ? "product.html?id=" + encodeURIComponent(r.productId)
-          : "";
-        var prodLine = r.productName
-          ? (prodHref
-              ? '<a class="link-light fw-semibold" href="' +
-                prodHref +
-                '">' +
-                escapeHtml(r.productName) +
-                "</a>"
-              : "<span>" + escapeHtml(r.productName) + "</span>")
-          : prodHref
-          ? '<a class="link-light small" href="' +
+        var prodLine = "";
+        if (r.productId) {
+          var prodHref =
+            "product.html?id=" + encodeURIComponent(r.productId);
+          var prodText = r.productName || "View product";
+          prodLine =
+            '<p class="profile-review-card__product"><a href="' +
             prodHref +
-            '">View product</a>'
-          : "";
+            '">' +
+            escapeHtml(prodText) +
+            "</a></p>";
+        }
 
-        var whoLine = r.reviewerLabel
-          ? '<p class="text-white-50 small mb-2">From · ' +
-            escapeHtml(r.reviewerLabel) +
+        var whoLine = r.sellerLabel
+          ? '<p class="profile-review-card__meta">Seller · ' +
+            escapeHtml(r.sellerLabel) +
             "</p>"
           : "";
 
         var dateLine = formatDate(r.createdAt);
         var dateHtml = dateLine
-          ? '<p class="text-white-50 small mb-2 mb-md-3">' +
-            escapeHtml(dateLine) +
-            "</p>"
+          ? '<p class="profile-review-card__date">' + escapeHtml(dateLine) + "</p>"
           : "";
 
-        var col = document.createElement("div");
-        col.className = "col-12 col-md-6";
-        col.innerHTML =
-          '<div class="card h-100 bg-dark text-white border border-secondary shadow-sm">' +
-          '<div class="card-body d-flex flex-column">' +
-          '<div class="mb-2">' +
+        var card = document.createElement("article");
+        card.className = "profile-review-card";
+        card.innerHTML =
           formatStarsHtml(r.rating) +
-          "</div>" +
           whoLine +
-          (r.text ? '<p class="card-text flex-grow-1">' + escapeHtml(r.text) + "</p>" : "") +
-          (prodLine ? '<p class="mb-2">' + prodLine + "</p>" : "") +
-          dateHtml +
-          "</div></div>";
+          (r.text
+            ? '<p class="profile-review-card__text">' + escapeHtml(r.text) + "</p>"
+            : "") +
+          prodLine +
+          dateHtml;
 
-        listEl.appendChild(col);
+        listEl.appendChild(card);
       });
     } catch (err) {
       console.error(err);
+      var msg = String((err && err.message) || "");
+      if (/401|403|token|unauthorized|log in/i.test(msg)) {
+        empty.classList.add("d-none");
+        listEl.classList.add("d-none");
+        errEl.textContent = "Could not load reviews. " + msg;
+        errEl.classList.remove("d-none");
+        return;
+      }
+      showNoReviews();
+    } finally {
       loading.classList.add("d-none");
-      empty.classList.add("d-none");
-      errEl.textContent =
-        "Could not load reviews. Check that you are logged in, your API is running, and `" +
-        (typeof API_USER_REVIEWS_PATH !== "undefined"
-          ? API_USER_REVIEWS_PATH
-          : "/api/users/me/reviews") +
-        "` matches your backend. " +
-        ((err && err.message) || "");
-      errEl.classList.remove("d-none");
     }
-  })();
+  }
+
+  loadReviews();
+  loadOrders();
+  loadReviewable();
 }
 </script>
-
-<footer class="text-white mt-5 pt-5 pb-4" style="background: rgba(0,0,0,0.9);">
-
-  <div class="container">
-    <div class="row">
-
-      <div class="col-md-4 mb-3">
-        <h4 class="fw-bold">Thrift It</h4>
-
-        <p class="text-light">
-          Buy and sell second-hand fashion safely, easily, and affordably.
-        </p>
-
-        <div class="d-flex gap-3 mt-3">
-          <a href="#" class="text-light fs-5"><i class="fa-brands fa-facebook"></i></a>
-          <a href="#" class="text-light fs-5"><i class="fa-brands fa-instagram"></i></a>
-          <a href="#" class="text-light fs-5"><i class="fa-brands fa-tiktok"></i></a>
-        </div>
-      </div>
-
-      <div class="col-md-4 mb-3">
-        <h5 class="fw-bold">Payment & Delivery</h5>
-
-        <ul class="list-unstyled text-light">
-          <li>✔ Cash on Delivery & Visa payments available</li>
-          <li>✔ You can inspect the item with the courier (5–10 minutes)</li>
-          <li>✔ Delivery available in Cairo & Giza only</li>
-        </ul>
-      </div>
-
-      <div class="col-md-4 mb-3">
-        <h5 class="fw-bold">Quick Links</h5>
-
-        <ul class="list-unstyled">
-          <li><a href="index.html" class="text-light text-decoration-none">Home</a></li>
-          <li><a href="profile.html" class="text-light text-decoration-none">Your profile</a></li>
-          <li><a href="women.html" class="text-light text-decoration-none">Woman</a></li>
-          <li><a href="men.html" class="text-light text-decoration-none">Man</a></li>
-        </ul>
-      </div>
-
-    </div>
-
-    <hr class="border-light">
-
-    <div class="text-center text-light">
-      <small>© 2026 Thrift It. All rights reserved.</small>
-    </div>
-
-  </div>
-
-</footer>
+  <script src="footer.js"></script>
 </body>
 </html>

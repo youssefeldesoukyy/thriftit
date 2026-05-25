@@ -9,44 +9,34 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <title>Thriftit</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-     <style>
-    body {
-  margin: 0;
-  min-height: 100vh;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.8),
-    rgba(0, 0, 0, 0.2)
-  );
-}
-    </style>
-    <script src="config.js"></script>
+    <script src="config.js?v=4000"></script>
+    <script src="auth-api.js?v=3"></script>
   </head>
 
-<body>
-<header class="d-flex align-items-center text-white" style="height:100vh;">
+<body class="thriftit-home">
+<header class="home-hero text-white">
 
-  <div class="container-fluid">
+  <div class="container-fluid px-3">
 
-    <div class="row">
+    <div class="row justify-content-center">
 
-      <div class="col-12 text-start ps-2 ps-md-5">
+      <div class="col-11 col-lg-10 col-xl-8 mx-auto text-center">
 
-        <h1 style="font-family:'Playfair Display', serif; font-size:2.6rem; font-weight:700;">
+        <h1 class="mx-auto" style="font-family:'Playfair Display', serif; font-size:2.6rem; font-weight:700; max-width: 36rem;">
           Buy & Sell Unique Pieces
         </h1>
 
-        <p style="font-family:'Poppins', sans-serif; font-size:1rem; opacity:0.85;">
+        <p class="mx-auto text-light opacity-75" style="font-family:'Poppins', sans-serif; font-size:1rem; max-width: 32rem;">
           Discover vintage fashion, express your style, and give clothes a second life.
         </p>
+        <div class="d-flex flex-wrap gap-3 align-items-center justify-content-center mt-2">
         <a href="shopall.html" class="btn btn-light btn-lg fw-bold px-4">
           Shop All
         </a>
-        <p class="opacity-75 small mt-3 mb-0" style="font-family:'Poppins', sans-serif;">
-          Products load from the API on <strong>Shop All</strong>, <strong>Woman</strong>, <strong>Man</strong>, and <strong>Search</strong> — not on this landing page alone.
-        </p>
-
+        <a href="seller.html" class="btn btn-outline-light btn-lg fw-bold px-4">
+          Sell Your Item
+        </a>
+        </div>
 
       </div>
 
@@ -56,14 +46,9 @@
 
 </header>
 
-
-
-
-  <!-- Navbar -->
-<nav class="navbar navbar-expand-lg fixed-top navbar-light bg-white border-bottom shadow-sm">
+  <nav class="navbar navbar-expand-lg fixed-top navbar-light thriftit-navbar">
   <div class="container-fluid">
     
-<!-- Navbar Brand / Logo -->
 <a class="navbar-brand d-flex align-items-center py-2" href="index.html">
   <img src="images/thriftit-logo.png" alt="Thrift It" class="thriftit-navbar-logo">
 </a>
@@ -73,11 +58,12 @@
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="women.html">Woman</a></li>
-        <li class="nav-item"><a class="nav-link" href="men.html">Man</a></li>
-        <li class="nav-item"><a class="nav-link" href="seller.html">Sell Your Item</a></li>
+        <li class="nav-item"><a class="nav-link" href="women.html">Women</a></li>
+        <li class="nav-item"><a class="nav-link" href="men.html">Men</a></li>
+        <li class="nav-item">
+          <a class="nav-link navbar-sell-nav" href="seller.html">Sell your item</a>
+        </li>
       </ul>
-      <!-- right side -->
       <div class="d-flex align-items-center gap-3">
 
         <form class="navbar-search-form" role="search" onsubmit="goToSearch(event)">
@@ -95,10 +81,7 @@
           <i class="fa-solid fa-cart-shopping"></i>
         </a>
 
-        <!-- 🔥 NEW: AUTH SECTION -->
         <a href="login.html" id="loginBtn" class="btn btn-outline-dark btn-sm">Login</a>
-        <a href="signup.html" id="signupBtn" class="btn btn-dark btn-sm">Sign Up</a>
-
         <a href="profile.html" id="username" class="sign-link text-decoration-none align-middle" style="display:none;"></a>
 
       </div>
@@ -107,238 +90,18 @@
   </div>
 </nav>
 
-<!-- SCRIPT bta3 el navbar -->
-<script>
-let currentUser = JSON.parse(localStorage.getItem("currentUser"));
-
-let loginBtn = document.getElementById("loginBtn");
-let signupBtn = document.getElementById("signupBtn");
-let username = document.getElementById("username");
-
-if (currentUser) {
-  loginBtn.style.display = "none";
-  signupBtn.style.display = "none";
-
-  username.style.display = "inline-block";
-  username.innerText = "Hi, " + currentUser.name;
-} else {
-  loginBtn.style.display = "inline-block";
-  signupBtn.style.display = "inline-block";
-
-  username.style.display = "none";
-}
-</script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <section class="py-5">
   <div class="container">
 
     <h2 class="text-white fw-bold text-center" style="letter-spacing:2px; font-size: 2.5rem;">SHOP BY CATEGORY</h2>
     <p class="text-light opacity-75 text-center">Discover your style</p>
 
-    <div class="row g-4">
-
-      <!-- Jackets -->
-      <div class="col-6 col-md-4 col-lg-3">
-        <a href="category.html?type=Jackets" class="category-link">
-          <div class="category-card">
-            <img src="images/jacket1.webp">
-            <div class="category-text">Jackets</div>
-          </div>
-        </a>
-      </div>
-
-      <!-- Shirts -->
-      <div class="col-6 col-md-4 col-lg-3">
-        <a href="category.html?type=Shirts" class="category-link">
-          <div class="category-card">
-            <img src="images/shirt1.webp" alt="">
-            <div class="category-text">Shirts</div>
-          </div>
-        </a>
-      </div>
-
-      <!-- Sweatshirts -->
-      <div class="col-6 col-md-4 col-lg-3">
-        <a href="category.html?type=sweatshirt" class="category-link">
-          <div class="category-card">
-            <img src="images/washed baggy hoodie brown men 1.webp">
-            <div class="category-text">Sweatshirts</div>
-          </div>
-        </a>
-      </div>
-
-      <!-- Pants -->
-      <div class="col-6 col-md-4 col-lg-3">
-        <a href="category.html?type=Pants" class="category-link">
-          <div class="category-card">
-            <img src="images/pants1.webp">
-            <div class="category-text">Pants</div>
-          </div>
-        </a>
-      </div>
-
-      <!-- Dresses -->
-      <div class="col-6 col-md-4 col-lg-3">
-        <a href="category.html?type=Dresses" class="category-link">
-          <div class="category-card">
-            <img src="images/dress5.jpg">
-            <div class="category-text">Dresses</div>
-          </div>
-        </a>
-      </div>
-
-      <!-- Bags -->
-      <div class="col-6 col-md-4 col-lg-3">
-        <a href="category.html?type=Bags" class="category-link">
-          <div class="category-card">
-            <img src="images/bags.jpg">
-            <div class="category-text">Bags</div>
-          </div>
-        </a>
-      </div>
-
-       <!-- skirts -->
-      <div class="col-6 col-md-4 col-lg-3">
-        <a href="category.html?type=Skirts" class="category-link">
-          <div class="category-card">
-            <img src="images/skirt 2.webp">
-            <div class="category-text">Skirts</div>
-          </div>
-        </a>
-      </div>
-       <!-- Shoes -->
-      <div class="col-6 col-md-4 col-lg-3">
-        <a href="category.html?type=Shoes" class="category-link">
-          <div class="category-card">
-            <img src="images/shoes.jpg">
-            <div class="category-text">Shoes</div>
-          </div>
-        </a>
-      </div>
-
-    </div>
+    <div class="row g-4" id="home-categories-row"></div>
   </div>
 </section>
 
     <script src="script/bootstrap.min.js"></script>
     <script src="index.js"></script>
-
-<!-- FOOTER -->
-<footer class="text-white mt-5 pt-5 pb-4" style="background: rgba(0,0,0,0.9);">
-
-  <div class="container">
-    <div class="row">
-
-      <!-- BRAND -->
-      <div class="col-md-4 mb-3">
-        <h4 class="fw-bold">Thrift It</h4>
-
-        <p class="text-light">
-          Buy and sell second-hand fashion safely, easily, and affordably.
-        </p>
-
-        <!-- SOCIAL ICONS -->
-        <div class="d-flex gap-3 mt-3">
-          <a href="#" class="text-light fs-5"><i class="fa-brands fa-facebook"></i></a>
-          <a href="#" class="text-light fs-5"><i class="fa-brands fa-instagram"></i></a>
-          <a href="#" class="text-light fs-5"><i class="fa-brands fa-tiktok"></i></a>
-        </div>
-      </div>
-
-      <!-- PAYMENT & DELIVERY -->
-      <div class="col-md-4 mb-3">
-        <h5 class="fw-bold">Payment & Delivery</h5>
-
-        <ul class="list-unstyled text-light">
-          <li>✔ Cash on Delivery & Visa payments available</li>
-          <li>✔ You can inspect the item with the courier (5–10 minutes)</li>
-          <li>✔ Delivery available in Cairo & Giza only</li>
-        </ul>
-      </div>
-
-      <!-- LINKS -->
-      <div class="col-md-4 mb-3">
-        <h5 class="fw-bold">Quick Links</h5>
-
-        <ul class="list-unstyled">
-          <li><a href="index.html" class="text-light text-decoration-none">Home</a></li>
-          <li><a href="women.html" class="text-light text-decoration-none">Woman</a></li>
-          <li><a href="men.html" class="text-light text-decoration-none">Man</a></li>
-        </ul>
-      </div>
-
-    </div>
-
-    <hr class="border-light">
-
-    <div class="text-center text-light">
-      <small>© 2026 Thrift It. All rights reserved.</small>
-    </div>
-
-  </div>
-
-</footer>
+  <script src="footer.js"></script>
 </body>
 </html>

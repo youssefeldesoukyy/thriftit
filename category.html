@@ -1,207 +1,55 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Category — Thrift It</title>
   <link rel="stylesheet" href="style/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
   <link rel="stylesheet" href="style.css">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
-  <title>Thriftit</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-
-  <style>
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: linear-gradient(
-        to bottom,
-        rgba(0, 0, 0, 0.8),
-        rgba(0, 0, 0, 0.2)
-      );
-    }
-
-    .page-content {
-      padding-top: 90px;
-    }
-
-    .category-title {
-      color: white;
-      font-size: 28px;
-      font-weight: bold;
-    }
-
-    .card img {
-      height: 250px;
-      object-fit: cover;
-    }
-  </style>
   <script src="config.js"></script>
+  <script src="auth-api.js?v=3"></script>
   <script src="products-api.js"></script>
 </head>
-
-<body>
-
-<nav class="navbar navbar-expand-lg fixed-top navbar-light bg-white border-bottom shadow-sm" style="z-index:9999;">
-  <div class="container-fluid">
-
-    <a class="navbar-brand d-flex align-items-center py-2" href="index.html">
-      <img src="images/thriftit-logo.png" alt="Thrift It" class="thriftit-navbar-logo">
-    </a>
-
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="women.html">Woman</a></li>
-        <li class="nav-item"><a class="nav-link" href="men.html">Man</a></li>
-        <li class="nav-item"><a class="nav-link" href="seller.html">Sell Your Item</a></li>
-      </ul>
-
-    </div>
-  </div>
-</nav>
-
-<div class="container page-content">
-
-  <div class="text-center mb-4">
-    <div id="categoryTitle" class="category-title"></div>
-  </div>
-
-  <div class="row" id="productsContainer"></div>
-
-</div>
-
-<script>
-const params = new URLSearchParams(window.location.search);
-const type = params.get("type");
-
-document.getElementById("categoryTitle").innerText = type || "";
-
-(async () => {
-const products = await fetchProductsMerged();
-const container = document.getElementById("productsContainer");
-
-products.forEach((product, index) => {
-
-  if (
-  isProductListedOnShop(product) &&
-  product.category?.toLowerCase() === type?.toLowerCase()
-) {
-
-    let carouselId = `carousel-${index}`;
-
-   let carouselInner = product.images.map((img, i) => `
-  <div class="carousel-item ${i === 0 ? 'active' : ''}">
-    
-    <a href="product.html?id=${product.id}">
-      <img src="${img}" class="d-block w-100" alt="${product.name}">
-    </a>
-
-  </div>
-`).join('');
-
-    let card = document.createElement("div");
-    card.className = "col-12 col-sm-6 col-md-4 col-lg-3 mb-4";
-
-    card.innerHTML = `
-      <div class="card">
-
-        <div id="${carouselId}" class="carousel slide" data-bs-ride="false">
-          <div class="carousel-inner">
-            ${carouselInner}
-          </div>
-
-          <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon"></span>
-          </button>
-
-          <button class="carousel-control-next" type="button" data-bs-target="#${carouselId}" data-bs-slide="next">
-            <span class="carousel-control-next-icon"></span>
-          </button>
-        </div>
-
-        <div class="card-body">
-
-          <h5 class="fw-bold">${product.name}</h5>
-          <p class="text-muted">${product.price} EGP</p>
-
-          <p style="font-size:14px;">Color: ${product.color || "N/A"}</p>
-          <p style="font-size:14px;">Size: ${product.size || "N/A"}</p>
-
-          <a href="product.html?id=${product.id}" class="btn btn-dark w-100">
-            View Product
-          </a>
-
-        </div>
-
-      </div>
-    `;
-
-    container.appendChild(card);
-  }
-});
-})();
-</script>
-
-<script src="script/bootstrap.min.js"></script>
-<!-- FOOTER -->
-<footer class="text-white mt-5 pt-5 pb-4" style="background: rgba(0,0,0,0.9);">
-
-  <div class="container">
-    <div class="row">
-
-      <!-- BRAND -->
-      <div class="col-md-4 mb-3">
-        <h4 class="fw-bold">Thrift It</h4>
-
-        <p class="text-light">
-          Buy and sell second-hand fashion safely, easily, and affordably.
-        </p>
-
-        <!-- SOCIAL ICONS -->
-        <div class="d-flex gap-3 mt-3">
-          <a href="#" class="text-light fs-5"><i class="fa-brands fa-facebook"></i></a>
-          <a href="#" class="text-light fs-5"><i class="fa-brands fa-instagram"></i></a>
-          <a href="#" class="text-light fs-5"><i class="fa-brands fa-tiktok"></i></a>
-        </div>
-      </div>
-
-      <!-- PAYMENT & DELIVERY -->
-      <div class="col-md-4 mb-3">
-        <h5 class="fw-bold">Payment & Delivery</h5>
-
-        <ul class="list-unstyled text-light">
-          <li>✔ Cash on Delivery & Visa payments available</li>
-          <li>✔ You can inspect the item with the courier (5–10 minutes)</li>
-          <li>✔ Delivery available in Cairo & Giza only</li>
+<body class="thriftit-shop-page">
+  <nav class="navbar navbar-expand-lg fixed-top navbar-light thriftit-navbar">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center py-2" href="index.html">
+        <img src="images/thriftit-logo.png" alt="Thrift It" class="thriftit-navbar-logo">
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="women.html">Women</a></li>
+          <li class="nav-item"><a class="nav-link" href="men.html">Men</a></li>
+          <li class="nav-item"><a class="nav-link navbar-sell-nav" href="seller.html">Sell your item</a></li>
         </ul>
       </div>
-
-      <!-- LINKS -->
-      <div class="col-md-4 mb-3">
-        <h5 class="fw-bold">Quick Links</h5>
-
-        <ul class="list-unstyled">
-          <li><a href="index.html" class="text-light text-decoration-none">Home</a></li>
-          <li><a href="women.html" class="text-light text-decoration-none">Woman</a></li>
-          <li><a href="men.html" class="text-light text-decoration-none">Man</a></li>
-        </ul>
-      </div>
-
     </div>
+  </nav>
 
-    <hr class="border-light">
-
-    <div class="text-center text-light">
-      <small>© 2026 Thrift It. All rights reserved.</small>
-    </div>
-
+  <div class="container shop-page thriftit-page-section mt-5 pt-5 pb-5">
+    <h1 id="categoryTitle" class="thriftit-page-heading">Category</h1>
+    <div class="row g-4" id="productsContainer"></div>
   </div>
 
-</footer>
+  <script src="script/bootstrap.min.js"></script>
+  <script>
+    (function () {
+      var type = (new URLSearchParams(window.location.search).get("type") || "").trim();
+      var label = formatCategoryDisplayName(type) || "Category";
+      document.getElementById("categoryTitle").innerText = label;
+      renderShopProductGrid("productsContainer", {
+        categoryType: type,
+        carouselPrefix: "cat",
+        emptyMessage: "No " + label + " listings yet",
+        emptyHint:
+          'Try <a href="shopall.html" class="text-white">Shop All</a> or list one from <a href="seller.html" class="text-white">Sell your item</a>.',
+      });
+    })();
+  </script>
+  <script src="footer.js"></script>
 </body>
 </html>

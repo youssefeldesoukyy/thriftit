@@ -7,46 +7,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
-    <title>Thriftit</title>
+    <title>Product — Thrift It</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-     <style>
-    body {
-  margin: 0;
-  min-height: 100vh;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.8),
-    rgba(0, 0, 0, 0.2)
-  );
-}
-    </style>
     <script src="config.js"></script>
-    <script src="products-api.js"></script>
+    <script src="auth-api.js?v=3"></script>
+    <script src="products-api.js?v=7"></script>
+    <script src="gallery-nav.js?v=3"></script>
     <script src="app-api.js"></script>
   </head>
 
-<body>
-    <!-- Bootstrap Toast Notification -->
-  <div class="toast-container position-fixed top-0 end-0 p-3">
+<body class="thriftit-product-page">
+    <div class="toast-container position-fixed top-0 end-0 p-3">
 
-  <div id="liveToast" class="toast align-items-center text-bg-dark border-0">
+  <div id="liveToast" class="toast thriftit-toast align-items-center border-0" role="alert" aria-live="polite">
     <div class="d-flex">
       <div class="toast-body" id="toast-msg"></div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
     </div>
   </div>
 
 </div>
 
 
-
-
-  <!-- Navbar -->
-<nav class="navbar navbar-expand-lg fixed-top navbar-light bg-white border-bottom shadow-sm">
+  <nav class="navbar navbar-expand-lg fixed-top navbar-light thriftit-navbar">
   <div class="container-fluid">
     
-<!-- Navbar Brand / Logo -->
 <a class="navbar-brand d-flex align-items-center py-2" href="index.html">
   <img src="images/thriftit-logo.png" alt="Thrift It" class="thriftit-navbar-logo">
 </a>
@@ -56,11 +41,12 @@
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="women.html">Woman</a></li>
-        <li class="nav-item"><a class="nav-link" href="men.html">Man</a></li>
-        <li class="nav-item"><a class="nav-link" href="seller.html">Sell Your Item</a></li>
+        <li class="nav-item"><a class="nav-link" href="women.html">Women</a></li>
+        <li class="nav-item"><a class="nav-link" href="men.html">Men</a></li>
+        <li class="nav-item">
+          <a class="nav-link navbar-sell-nav" href="seller.html">Sell your item</a>
+        </li>
       </ul>
-      <!-- right side -->
       <div class="d-flex align-items-center gap-3">
 
         <form class="navbar-search-form" role="search" onsubmit="goToSearch(event)">
@@ -78,9 +64,8 @@
           <i class="fa-solid fa-cart-shopping"></i>
         </a>
 
-        <!-- 🔥 NEW: AUTH SECTION -->
         <a href="login.html" id="loginBtn" class="btn btn-outline-dark btn-sm">Login</a>
-        <a href="signup.html" id="signupBtn" class="btn btn-dark btn-sm">Sign Up</a>
+        <a href="signup.html" id="signupBtn" class="btn btn-outline-dark btn-sm">Sign Up</a>
 
         <a href="profile.html" id="username" class="sign-link text-decoration-none align-middle" style="display:none;"></a>
 
@@ -90,137 +75,99 @@
   </div>
 </nav>
 
-<!-- SCRIPT bta3 el navbar -->
-<script>
-let currentUser = JSON.parse(localStorage.getItem("currentUser"));
-
-let loginBtn = document.getElementById("loginBtn");
-let signupBtn = document.getElementById("signupBtn");
-let username = document.getElementById("username");
-
-if (currentUser) {
-  loginBtn.style.display = "none";
-  signupBtn.style.display = "none";
-
-  username.style.display = "inline-block";
-  username.innerText = "Hi, " + currentUser.name;
-} else {
-  loginBtn.style.display = "inline-block";
-  signupBtn.style.display = "inline-block";
-
-  username.style.display = "none";
-}
-</script>
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- Product Details -->
-<div class="container mt-5 pt-5">
-  <div class="row align-items-center">
-
-    <!-- Carousel -->
-    <div class="col-12 col-md-6 mb-4 mb-md-0">
-      <div id="productCarousel" class="carousel slide">
-        <div class="carousel-inner rounded" id="carousel-inner">
-          <!-- الصور هتتحمل من JS -->
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
-          <span class="carousel-control-prev-icon"></span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
-          <span class="carousel-control-next-icon"></span>
-        </button>
+<main class="product-main">
+  <div class="product-shell">
+  <div class="product-layout">
+    <div class="product-gallery">
+      <div id="productCarousel" class="carousel slide product-gallery-carousel">
+        <div class="carousel-inner" id="carousel-inner"></div>
       </div>
     </div>
 
-    <!-- Product Info -->
-    <div class="col-12 col-md-6 mt-4 mt-md-0">
-      <h3 class="fw-bold" id="product-name"></h3>
-      <p id="product-brand" class="text-muted mb-1 d-none"></p>
-      <p id="product-price" class="text-muted fs-5"></p>
-      <p id="product-color"></p>
-      <p id="product-size"></p>
-      <p id="product-onepiece" class="text-muted fst-italic"></p>
+    <div class="product-panel">
+      <h1 class="product-panel__title" id="product-name">Loading…</h1>
+      <p class="product-panel__brand d-none" id="product-brand"></p>
+      <p class="product-panel__seller d-none" id="product-seller">
+        <i class="fa-solid fa-store" aria-hidden="true"></i>
+        Sold by <span id="detail-seller"></span>
+        <span id="detail-seller-rating" class="product-panel__seller-rating d-none"></span>
+      </p>
 
-      <div class="d-flex flex-column flex-md-row gap-3 mt-4">
-        <button type="button" id="add-to-wishlist" class="btn btn-outline-dark btn-lg flex-fill">
+      <dl class="product-details">
+        <div class="product-details__row">
+          <dt>Category</dt>
+          <dd id="detail-category">—</dd>
+        </div>
+        <div class="product-details__row">
+          <dt>Gender</dt>
+          <dd id="detail-gender">—</dd>
+        </div>
+        <div class="product-details__row product-details__row--description">
+          <dt>Description</dt>
+          <dd id="detail-description">—</dd>
+        </div>
+        <div class="product-details__row">
+          <dt>Size</dt>
+          <dd id="detail-size">—</dd>
+        </div>
+        <div class="product-details__row">
+          <dt>Color</dt>
+          <dd id="detail-color">—</dd>
+        </div>
+        <div class="product-details__row">
+          <dt>Condition</dt>
+          <dd id="detail-condition">—</dd>
+        </div>
+        <div class="product-details__row">
+          <dt>Material</dt>
+          <dd id="detail-material">—</dd>
+        </div>
+        <div class="product-details__row product-details__row--price">
+          <dt>Price</dt>
+          <dd id="detail-price">—</dd>
+        </div>
+      </dl>
+
+      <div class="product-actions">
+        <button type="button" id="add-to-cart" class="btn product-actions__primary">
+          <i class="fa-solid fa-cart-shopping me-2" aria-hidden="true"></i>Add to cart
+        </button>
+        <button type="button" id="buy-it-now" class="btn product-actions__primary">
+          Buy it now
+        </button>
+        <button type="button" id="add-to-wishlist" class="btn product-actions__outline">
           <i class="fa-solid fa-heart me-2" aria-hidden="true"></i>Wishlist
         </button>
-        <button id="add-to-cart" class="btn btn-dark btn-lg flex-fill">Add to Cart</button>
-        <button id="buy-it-now" class="btn btn-success btn-lg flex-fill">Buy It Now</button>
       </div>
-    </div>
 
+      <section id="product-seller-reviews" class="product-seller-reviews d-none" aria-labelledby="product-seller-reviews-title">
+        <h2 id="product-seller-reviews-title" class="product-seller-reviews__title">Seller reviews</h2>
+        <div id="product-seller-reviews-list" class="product-seller-reviews__list"></div>
+        <button type="button" id="product-seller-reviews-toggle" class="product-seller-reviews__toggle d-none">
+          View more reviews
+        </button>
+      </section>
+    </div>
   </div>
+  </div>
+</main>
+
+<div id="product-image-lightbox" class="thriftit-image-lightbox d-none" aria-hidden="true">
+  <button type="button" class="thriftit-image-lightbox__close" aria-label="Close enlarged photo">&times;</button>
+  <button type="button" class="thriftit-image-lightbox__nav thriftit-image-lightbox__nav--prev" aria-label="Previous photo">
+    <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+  </button>
+  <img class="thriftit-image-lightbox__img" alt="" />
+  <button type="button" class="thriftit-image-lightbox__nav thriftit-image-lightbox__nav--next" aria-label="Next photo">
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+  </button>
+  <p class="thriftit-image-lightbox__count"></p>
 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<script src="script/bootstrap.min.js"></script>
 <script>
-   // This function shows a Bootstrap toast notification instead of using alert()
-function showToast(message) {
-  const toastEl = document.getElementById('liveToast');
-  const toastMsg = document.getElementById('toast-msg');
 
-  toastMsg.innerText = message;
-
-  const toast = new bootstrap.Toast(toastEl);
-  toast.show();
-}
-
-
-
-
-
+var productImageLightbox = createThriftitImageLightbox("product-image-lightbox");
 
 const urlParams = new URLSearchParams(window.location.search);
 const productId = urlParams.get('id');
@@ -229,54 +176,339 @@ let product = null;
 
 (async function hydrateProduct() {
   try {
-    const products = await fetchProductsMerged();
-    product = products.find((p) => String(p.id) === String(productId));
+    if (productId && typeof fetchProductById === "function") {
+      product = await fetchProductById(productId);
+    }
+    if (!product && typeof fetchProductsMerged === "function") {
+      const products = await fetchProductsMerged();
+      product = products.find((p) => String(p.id) === String(productId));
+    }
 
     if (!product || !productId) {
       if (productId) showToast("Product not found");
       return;
     }
 
-    document.getElementById('product-name').textContent = product.name;
-    var brandEl = document.getElementById('product-brand');
-    if (product.brand && String(product.brand).trim()) {
-      brandEl.textContent = String(product.brand).trim();
-      brandEl.classList.remove('d-none');
-    } else {
-      brandEl.classList.add('d-none');
+    function formatGender(g) {
+      var s = String(g || "").toLowerCase().trim();
+      if (s === "female") return "Women";
+      if (s === "male") return "Men";
+      if (g === "Female") return "Women";
+      if (g === "Male") return "Men";
+      return g && String(g).trim() ? String(g).trim() : "—";
     }
-    document.getElementById('product-price').textContent = `Price: ${product.price} EGP`;
-    document.getElementById('product-color').textContent = `Color: ${product.color}`;
-    document.getElementById('product-size').textContent = `Size: ${product.size}`;
-    document.getElementById('product-onepiece').textContent =
-      `Condition: ${product.condition || "Good"}`;
 
-    const carouselInner = document.getElementById('carousel-inner');
-    carouselInner.innerHTML = "";
+    function formatCategory(p) {
+      var raw =
+        (p.subcategory && String(p.subcategory).trim()) ||
+        (p.categoryDisplay && String(p.categoryDisplay).trim()) ||
+        (p.category && String(p.category).trim()) ||
+        "";
+      if (!raw) return "—";
+      return raw
+        .replace(/[-_]/g, " ")
+        .replace(/\b\w/g, function (c) {
+          return c.toUpperCase();
+        });
+    }
 
-    product.images.forEach((img, i) => {
-      const div = document.createElement('div');
-      div.className = `carousel-item ${i === 0 ? 'active' : ''}`;
-      div.innerHTML = `<img src="${img}" class="d-block w-100">`;
-      carouselInner.appendChild(div);
-    });
+    function setDetail(id, value) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var text =
+        value != null && String(value).trim() !== "" ? String(value).trim() : "—";
+      el.textContent = text;
+    }
+
+    document.getElementById("product-name").textContent = product.name || "Untitled";
+
+    var brandEl = document.getElementById("product-brand");
+    if (product.brand && String(product.brand).trim()) {
+      brandEl.textContent = product.brand;
+      brandEl.classList.remove("d-none");
+    } else {
+      brandEl.classList.add("d-none");
+    }
+
+    var sellerEl = document.getElementById("product-seller");
+    var sellerNameEl = document.getElementById("detail-seller");
+    var sellerLabel =
+      product.sellerName && String(product.sellerName).trim()
+        ? String(product.sellerName).trim()
+        : "";
+    if (sellerLabel && sellerNameEl && sellerEl) {
+      sellerNameEl.textContent = sellerLabel;
+      sellerEl.classList.remove("d-none");
+    } else if (sellerEl) {
+      sellerEl.classList.add("d-none");
+    }
+
+    if (product.sellerId && typeof getSellerReviews === "function") {
+      loadProductSellerReviews(product.sellerId);
+    }
+
+    setDetail("detail-category", formatCategory(product));
+    setDetail("detail-gender", formatGender(product.gender));
+    setDetail("detail-description", product.description || product.name);
+    setDetail("detail-size", product.size);
+    setDetail("detail-color", product.color);
+    setDetail(
+      "detail-condition",
+      product.condition
+        ? String(product.condition).charAt(0).toUpperCase() +
+            String(product.condition).slice(1).toLowerCase()
+        : "—"
+    );
+    setDetail("detail-material", product.material);
+    setDetail(
+      "detail-price",
+      product.price != null && product.price !== ""
+        ? product.price + " EGP"
+        : "—"
+    );
+
+    document.title = (product.name || "Product") + " — Thrift It";
+
+    function resolveGallerySrc(img) {
+      if (typeof resolveProductImageUrl === "function") {
+        return resolveProductImageUrl(img);
+      }
+      return typeof img === "string" ? img.trim() : "";
+    }
+
+    var galleryUrls = (product.images || [])
+      .map(resolveGallerySrc)
+      .filter(function (u) {
+        return u && String(u).trim();
+      });
+    if (typeof uniqueImageUrls === "function") {
+      galleryUrls = uniqueImageUrls(galleryUrls);
+    } else {
+      var seenGallery = {};
+      galleryUrls = galleryUrls.filter(function (u) {
+        if (seenGallery[u]) return false;
+        seenGallery[u] = true;
+        return true;
+      });
+    }
+    if (!galleryUrls.length && typeof thriftitGalleryPlaceholder === "function") {
+      galleryUrls = [thriftitGalleryPlaceholder()];
+    }
+
+    var carouselEl = document.getElementById("productCarousel");
+    if (carouselEl) {
+      var navHtml =
+        typeof galleryNavControlsHtml === "function"
+          ? galleryNavControlsHtml(galleryUrls.length > 1)
+          : "";
+      var inner = carouselEl.querySelector(".carousel-inner");
+      if (inner) inner.innerHTML = "";
+      carouselEl.insertAdjacentHTML("beforeend", navHtml);
+      if (typeof mountThriftitGallery === "function") {
+        mountThriftitGallery(
+          carouselEl,
+          galleryUrls,
+          "d-block w-100 product-gallery__img",
+          productImageLightbox ? productImageLightbox.open : null
+        );
+      }
+    }
+
+    var galleryEl = document.querySelector(".product-gallery");
+    if (galleryEl) galleryEl.classList.add("product-gallery--has-image");
+
+    var isSold = String(product.status || "").toLowerCase() === "sold";
+    var addBtn = document.getElementById("add-to-cart");
+    var buyBtn = document.getElementById("buy-it-now");
+    var wishBtn = document.getElementById("add-to-wishlist");
+    if (isSold) {
+      if (addBtn) {
+        addBtn.disabled = true;
+        addBtn.innerHTML =
+          '<i class="fa-solid fa-tag me-2" aria-hidden="true"></i>Sold';
+      }
+      if (buyBtn) buyBtn.disabled = true;
+      if (wishBtn) {
+        wishBtn.disabled = true;
+        wishBtn.innerHTML =
+          '<i class="fa-solid fa-heart me-2" aria-hidden="true"></i>Sold';
+      }
+    } else {
+      if (addBtn) addBtn.disabled = false;
+      if (buyBtn) buyBtn.disabled = false;
+      if (wishBtn) {
+        wishBtn.disabled = false;
+        wishBtn.innerHTML =
+          '<i class="fa-solid fa-heart me-2" aria-hidden="true"></i>Wishlist';
+      }
+    }
   } catch (err) {
     console.error(err);
-    if (productId) showToast("Could not load product");
+    if (productId) showToast(thriftitUserMessage(err, "Something went wrong. Please try again."));
   }
 })();
 
-// =====================
-// ADD TO CART (backend)
-// =====================
+function productReviewStarsHtml(rating) {
+  var raw = Number(rating);
+  if (!Number.isFinite(raw) || raw < 1) {
+    return '<span class="profile-review-card__meta">No rating</span>';
+  }
+  var n = Math.max(1, Math.min(5, Math.round(raw)));
+  var s = "";
+  var i;
+  for (i = 0; i < n; i++) {
+    s += '<i class="fa-solid fa-star" aria-hidden="true"></i>';
+  }
+  for (i = n; i < 5; i++) {
+    s += '<i class="fa-solid fa-star profile-star--empty" aria-hidden="true"></i>';
+  }
+  return (
+    '<div class="profile-review-card__stars">' +
+    s +
+    ' <span class="profile-review-card__meta">(' +
+    n +
+    "/5)</span></div>"
+  );
+}
+
+function formatProductReviewDate(at) {
+  if (!at) return "";
+  var d = new Date(at);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+var PRODUCT_REVIEWS_INITIAL = 2;
+
+function buildProductSellerReviewCard(r) {
+  var card = document.createElement("article");
+  card.className = "profile-review-card";
+
+  var productLine = r.productName
+    ? '<p class="profile-review-card__product">' +
+      escapeHtml(r.productName) +
+      "</p>"
+    : "";
+
+  var buyerLine =
+    '<p class="profile-review-card__meta">Buyer · ' +
+    escapeHtml(r.buyerLabel || "Buyer") +
+    "</p>";
+
+  var dateLine = formatProductReviewDate(r.createdAt);
+  var dateHtml = dateLine
+    ? '<p class="profile-review-card__date">' + escapeHtml(dateLine) + "</p>"
+    : "";
+
+  var textHtml =
+    r.text && String(r.text).trim()
+      ? '<p class="profile-review-card__text">' + escapeHtml(r.text) + "</p>"
+      : "";
+
+  card.innerHTML =
+    productLine +
+    buyerLine +
+    productReviewStarsHtml(r.rating) +
+    textHtml +
+    dateHtml;
+  return card;
+}
+
+async function loadProductSellerReviews(sellerId) {
+  var section = document.getElementById("product-seller-reviews");
+  var listEl = document.getElementById("product-seller-reviews-list");
+  var toggleBtn = document.getElementById("product-seller-reviews-toggle");
+  var ratingEl = document.getElementById("detail-seller-rating");
+  if (!section || !listEl) return;
+
+  try {
+    var ratingPromise =
+      typeof getSellerRating === "function"
+        ? getSellerRating(sellerId)
+        : Promise.resolve({ averageRating: 0, totalReviews: 0 });
+    var reviewsPromise = getSellerReviews(sellerId);
+    var rating = await ratingPromise;
+    var reviews = await reviewsPromise;
+
+    var total =
+      rating && rating.totalReviews > 0
+        ? rating.totalReviews
+        : reviews.length;
+
+    if (ratingEl && total > 0 && rating.averageRating > 0) {
+      var avg =
+        Math.round(Number(rating.averageRating) * 10) / 10;
+      ratingEl.innerHTML =
+        ' · <i class="fa-solid fa-star" aria-hidden="true"></i> ' +
+        escapeHtml(String(avg)) +
+        " (" +
+        escapeHtml(String(total)) +
+        (total === 1 ? " review" : " reviews") +
+        ")";
+      ratingEl.classList.remove("d-none");
+    }
+
+    if (!reviews.length) return;
+
+    section.classList.remove("d-none");
+    listEl.innerHTML = "";
+    listEl.classList.remove("is-expanded");
+    if (toggleBtn) {
+      toggleBtn.classList.add("d-none");
+      toggleBtn.replaceWith(toggleBtn.cloneNode(true));
+    }
+    toggleBtn = document.getElementById("product-seller-reviews-toggle");
+
+    var initialCount = Math.min(PRODUCT_REVIEWS_INITIAL, reviews.length);
+
+    reviews.forEach(function (r, index) {
+      var card = buildProductSellerReviewCard(r);
+      if (index >= initialCount) {
+        card.classList.add("product-seller-reviews__card--extra");
+      }
+      listEl.appendChild(card);
+    });
+
+    if (reviews.length > initialCount && toggleBtn) {
+      var hiddenCount = reviews.length - initialCount;
+      toggleBtn.classList.remove("d-none");
+      toggleBtn.textContent =
+        "View " +
+        hiddenCount +
+        " more review" +
+        (hiddenCount === 1 ? "" : "s");
+
+      toggleBtn.addEventListener("click", function () {
+        var expanded = listEl.classList.toggle("is-expanded");
+        toggleBtn.textContent = expanded
+          ? "Show fewer reviews"
+          : "View " +
+            hiddenCount +
+            " more review" +
+            (hiddenCount === 1 ? "" : "s");
+        toggleBtn.setAttribute(
+          "aria-expanded",
+          expanded ? "true" : "false"
+        );
+      });
+      toggleBtn.setAttribute("aria-expanded", "false");
+    }
+  } catch (err) {
+    console.error("Seller reviews:", err);
+  }
+}
+
 async function addToWishlist(p) {
   if (!p || !productId) {
     showToast("Please wait — product is loading");
     return;
   }
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-  if (!currentUser || !currentUser.email) {
-    showToast("Please login first");
+  if (!isLoggedIn()) {
+    showToast("Please log in first");
     return;
   }
   try {
@@ -284,41 +516,39 @@ async function addToWishlist(p) {
     showToast("Saved to wishlist");
   } catch (err) {
     console.error(err);
-    var msg = (err && err.message) || "Could not save to wishlist";
-    if (msg.toLowerCase().indexOf("already") !== -1 || msg.indexOf("409") !== -1)
-      showToast("Already in wishlist");
-    else showToast(msg);
+    var msg = thriftitUserMessage(err, "Something went wrong. Please try again.");
+    if (/already in wishlist/i.test(msg)) {
+      msg = "Already in your wishlist";
+    }
+    showToast(msg);
   }
 }
 
-async function addToCart(product) {
-  if (!product || !productId) {
+async function addToCart(p, options) {
+  options = options || {};
+  if (!p || !productId) {
     showToast("Please wait — product is loading");
-    return;
+    return false;
   }
 
-  let currentUser = JSON.parse(localStorage.getItem("currentUser"));
-
-  if (!currentUser || !currentUser.email) {
-    showToast("Please login first");
-    return;
+  if (!isLoggedIn()) {
+    showToast("Please log in first");
+    return false;
   }
 
   try {
-    await addProductToCart(product);
-    showToast("Added to cart 🛒");
+    await addProductToCart(p);
+    if (options.silent !== true) {
+      showToast("Added to cart");
+    }
+    return true;
   } catch (err) {
     console.error(err);
-    var msg = (err && err.message) || "Could not add to cart";
-    if (msg.toLowerCase().indexOf("already") !== -1 || msg.indexOf("409") !== -1)
-      showToast("Already in cart");
-    else showToast(msg);
+    showToast(thriftitUserMessage(err, "Something went wrong. Please try again."));
+    return false;
   }
 }
 
-// =====================
-// BUTTONS
-// =====================
 const addBtn = document.getElementById('add-to-cart');
 const buyBtn = document.getElementById('buy-it-now');
 const wishlistBtn = document.getElementById('add-to-wishlist');
@@ -327,71 +557,40 @@ wishlistBtn?.addEventListener('click', () => {
   addToWishlist(product);
 });
 
-addBtn?.addEventListener('click', () => {
+addBtn?.addEventListener("click", function () {
   addToCart(product);
 });
 
-buyBtn?.addEventListener('click', async () => {
-  await addToCart(product);
-  window.location.href = "cart.html";
-});
+if (buyBtn) {
+  buyBtn.addEventListener("click", async function () {
+    if (!product || !productId) {
+      showToast("Please wait — product is loading");
+      return;
+    }
+    if (String(product.status || "").toLowerCase() === "sold") {
+      showToast("This item is sold");
+      return;
+    }
+    if (!isLoggedIn()) {
+      showToast("Please log in first");
+      window.location.href = "login.html";
+      return;
+    }
+    buyBtn.disabled = true;
+    try {
+      var ok = await addToCart(product, { silent: true });
+      if (ok) {
+        window.location.href = "checkout.html";
+      }
+    } finally {
+      if (String(product.status || "").toLowerCase() !== "sold") {
+        buyBtn.disabled = false;
+      }
+    }
+  });
+}
 </script>
-<script src="script/bootstrap.min.js"></script>
 <script src="index.js"></script>
-<!-- FOOTER -->
-<footer class="text-white mt-5 pt-5 pb-4" style="background: rgba(0,0,0,0.9);">
-
-  <div class="container">
-    <div class="row">
-
-      <!-- BRAND -->
-      <div class="col-md-4 mb-3">
-        <h4 class="fw-bold">Thrift It</h4>
-
-        <p class="text-light">
-          Buy and sell second-hand fashion safely, easily, and affordably.
-        </p>
-
-        <!-- SOCIAL ICONS -->
-        <div class="d-flex gap-3 mt-3">
-          <a href="#" class="text-light fs-5"><i class="fa-brands fa-facebook"></i></a>
-          <a href="#" class="text-light fs-5"><i class="fa-brands fa-instagram"></i></a>
-          <a href="#" class="text-light fs-5"><i class="fa-brands fa-tiktok"></i></a>
-        </div>
-      </div>
-
-      <!-- PAYMENT & DELIVERY -->
-      <div class="col-md-4 mb-3">
-        <h5 class="fw-bold">Payment & Delivery</h5>
-
-        <ul class="list-unstyled text-light">
-          <li>✔ Cash on Delivery & Visa payments available</li>
-          <li>✔ You can inspect the item with the courier (5–10 minutes)</li>
-          <li>✔ Delivery available in Cairo & Giza only</li>
-        </ul>
-      </div>
-
-      <!-- LINKS -->
-      <div class="col-md-4 mb-3">
-        <h5 class="fw-bold">Quick Links</h5>
-
-        <ul class="list-unstyled">
-          <li><a href="index.html" class="text-light text-decoration-none">Home</a></li>
-          <li><a href="women.html" class="text-light text-decoration-none">Woman</a></li>
-          <li><a href="men.html" class="text-light text-decoration-none">Man</a></li>
-        </ul>
-      </div>
-
-    </div>
-
-    <hr class="border-light">
-
-    <div class="text-center text-light">
-      <small>© 2026 Thrift It. All rights reserved.</small>
-    </div>
-
-  </div>
-
-</footer>
+  <script src="footer.js"></script>
 </body>
 </html>

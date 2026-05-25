@@ -1,112 +1,41 @@
 function goToSearch(event) {
   event.preventDefault();
-
-  const input = document.getElementById("searchInput").value;
-
-  window.location.href = "search.html?query=" + input;
+  var input = document.getElementById("searchInput");
+  if (!input) return;
+  window.location.href =
+    "search.html?query=" + encodeURIComponent(input.value);
 }
 
-
-
-
-
-console.log("index.js is loaded");
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Only seller-style pages expose #submit-product; index.js is loaded on many pages.
-const submitProductBtn = document.getElementById("submit-product");
-if (submitProductBtn) {
-  submitProductBtn.addEventListener("click", function () {
-    const name = document.getElementById("product-name").value;
-    const price = document.getElementById("product-price").value;
-    const color = document.getElementById("product-color").value;
-    const size = document.getElementById("product-size").value;
-    const condition = document.getElementById("product-condition").value;
-    const image = document.getElementById("product-image").files[0]
-      ? URL.createObjectURL(document.getElementById("product-image").files[0])
-      : "";
-
-    let products = JSON.parse(localStorage.getItem("products")) || [];
-
-    products.push({ name, price, color, size, condition, image });
-
-    localStorage.setItem("products", JSON.stringify(products));
-
-    alert("Product added successfully!");
-  });
-}
+(function renderHomeCategories() {
+  var row = document.getElementById("home-categories-row");
+  if (!row) return;
+  var cats = [
+    { type: "jackets", label: "Jackets", img: "images/category/jackets.png" },
+    { type: "shirts", label: "Shirts", img: "images/category/shirts.png" },
+    { type: "tshirts", label: "Tshirts", img: "images/category/tshirts.png" },
+    { type: "sweatshirts", label: "Sweatshirts", img: "images/category/sweatshirts.png" },
+    { type: "bottoms", label: "Bottoms", img: "images/category/pants.png" },
+    { type: "dresses", label: "Dresses", img: "images/category/dresses.png" },
+    { type: "tops", label: "Tops", img: "images/category/tops.png" },
+    { type: "accessories", label: "Accessories", img: "images/category/accessories.png" },
+  ];
+  row.innerHTML = cats
+    .map(function (c) {
+      return (
+        '<div class="col-6 col-md-4 col-lg-3">' +
+        '<a href="category.html?type=' +
+        encodeURIComponent(c.type) +
+        '" class="category-link">' +
+        '<div class="category-card">' +
+        '<img src="' +
+        c.img +
+        '?v=gen" alt="' +
+        c.label +
+        '">' +
+        '<div class="category-text">' +
+        c.label +
+        "</div></div></a></div>"
+      );
+    })
+    .join("");
+})();

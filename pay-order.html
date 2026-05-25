@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complete payment — Thrift It</title>
+  <link rel="stylesheet" href="style/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <link rel="stylesheet" href="style.css">
+  <script src="config.js"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="auth-api.js?v=4"></script>
+  <script src="app-api.js?v=7"></script>
+</head>
+<body class="thriftit-bag-page">
+  <div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="liveToast" class="toast thriftit-toast align-items-center text-bg-dark border-0">
+      <div class="d-flex">
+        <div class="toast-body" id="toast-msg"></div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  </div>
+
+  <nav class="navbar navbar-expand-lg fixed-top navbar-light thriftit-navbar">
+    <div class="container-fluid">
+      <a class="navbar-brand py-2" href="index.html">
+        <img src="images/thriftit-logo.png" alt="Thrift It" class="thriftit-navbar-logo">
+      </a>
+    </div>
+  </nav>
+
+  <main class="container thriftit-page-section mt-5 pt-5 pb-5" style="max-width: 520px;">
+    <h1 class="thriftit-page-heading">Complete payment</h1>
+    <p class="thriftit-bag-subtitle" id="pay-intro">Loading order…</p>
+
+    <div id="pay-blocked" class="thriftit-profile-alert d-none"></div>
+
+    <div id="pay-panel" class="thriftit-bag-panel d-none">
+      <p class="mb-2"><strong>Order total:</strong> <span id="pay-amount">—</span></p>
+      <p class="small text-muted mb-3" id="pay-address"></p>
+
+      <div class="checkout-payment-options mb-3">
+        <label class="checkout-payment-option">
+          <input type="radio" name="pay-method" value="cod" checked> Cash on delivery
+        </label>
+        <label class="checkout-payment-option">
+          <input type="radio" name="pay-method" value="visa"> Visa / card
+        </label>
+      </div>
+
+      <div id="card-details" class="checkout-card-details d-none">
+        <div id="stripe-card-panel" class="checkout-field mb-2"></div>
+      </div>
+
+      <button type="button" id="pay-submit" class="thriftit-bag-btn thriftit-bag-btn--primary thriftit-bag-btn--block">
+        Pay now
+      </button>
+    </div>
+
+    <a href="profile.html#orders" class="checkout-back-link d-inline-block mt-3">← Back to orders</a>
+  </main>
+
+  <script src="script/bootstrap.min.js"></script>
+  <script>
+  var params = new URLSearchParams(location.search);
+  var orderId = params.get("orderId");
+  var stripeInstance = null;
+  var stripeCardElement = null;
+
+  if (!isLoggedIn()) {
+    location.href = "login.html";
+  } else if (!orderId) {
+    document.getElementById("pay-intro").textContent = "Missing order id.";
+  } else {
+    (async function () {
+      try {
+        var order = await getOrderById(orderId);
+        var status = String(order.status || "").toLowerCase();
+        var intro = document.getElementById("pay-intro");
+        var panel = document.getElementById("pay-panel");
+        var blocked = document.getElementById("pay-blocked");
+
+        if (status === "pending") {
+          intro.textContent = "This order is still waiting for admin approval. You can pay after it is approved.";
+          blocked.classList.remove("d-none");
+          blocked.textContent = "Payment is not available yet.";
+          return;
+        }
+        if (status !== "confirmed") {
+          intro.textContent = "This order cannot be paid right now (status: " + status + ").";
+          blocked.classList.remove("d-none");
+          blocked.textContent = "Contact support if you need help.";
+          return;
+        }
+
+        intro.textContent = "Your order was approved. Complete payment below.";
+        document.getElementById("pay-amount").textContent = order.amount + " EGP";
+        document.getElementById("pay-address").textContent = order.address || "";
+        panel.classList.remove("d-none");
+
+        var last = null;
+        try {
+          last = JSON.parse(localStorage.getItem("lastOrder") || "null");
+        } catch (_) {}
+        if (last && last.paymentMethod === "visa") {
+          var visa = document.querySelector('input[name="pay-method"][value="visa"]');
+          if (visa) visa.checked = true;
+        }
+
+        document.querySelectorAll('input[name="pay-method"]').forEach(function (r) {
+          r.addEventListener("change", toggleCard);
+        });
+        toggleCard();
+        initStripeIfNeeded();
+
+        document.getElementById("pay-submit").addEventListener("click", onPay);
+      } catch (e) {
+        document.getElementById("pay-intro").textContent = (e && e.message) || "Could not load order";
+      }
+    })();
+  }
+
+  function toggleCard() {
+    var visa = document.querySelector('input[name="pay-method"]:checked');
+    var card = document.getElementById("card-details");
+    if (visa && visa.value === "visa") {
+      card.classList.remove("d-none");
+      initStripeIfNeeded();
+    } else {
+      card.classList.add("d-none");
+    }
+  }
+
+  async function initStripeIfNeeded() {
+    if (stripeCardElement) return;
+    var key = typeof STRIPE_PUBLISHABLE_KEY !== "undefined" ? STRIPE_PUBLISHABLE_KEY : "";
+    if (!key && typeof fetchStripePublishableKey === "function") {
+      key = await fetchStripePublishableKey();
+    }
+    if (!key || !key.startsWith("pk_")) return;
+    stripeInstance = Stripe(key);
+    var elements = stripeInstance.elements();
+    stripeCardElement = elements.create("card", { hidePostalCode: true });
+    stripeCardElement.mount("#stripe-card-panel");
+  }
+
+  async function onPay() {
+    var btn = document.getElementById("pay-submit");
+    var method = document.querySelector('input[name="pay-method"]:checked');
+    var payMethod = method ? method.value : "cod";
+    btn.disabled = true;
+    try {
+      if (payMethod === "cod") {
+        await createCashPayment(orderId);
+        showToast("Cash on delivery confirmed");
+      } else {
+        var stripePay = await createStripePayment(orderId);
+        if (!stripePay.clientSecret) throw new Error("Could not start card payment");
+        if (!stripeInstance || !stripeCardElement) throw new Error("Card form not ready");
+        var confirmResult = await stripeInstance.confirmCardPayment(stripePay.clientSecret, {
+          payment_method: { card: stripeCardElement, billing_details: { address: { country: "EG" } } },
+        });
+        if (confirmResult.error) throw new Error(confirmResult.error.message || "Payment failed");
+        if (!confirmResult.paymentIntent || confirmResult.paymentIntent.status !== "succeeded") {
+          throw new Error("Payment was not completed");
+        }
+        await confirmStripePayment(confirmResult.paymentIntent.id);
+        showToast("Payment successful");
+      }
+      setTimeout(function () {
+        location.href = "profile.html#orders";
+      }, 1200);
+    } catch (e) {
+      showToast((e && e.message) || "Payment failed");
+      btn.disabled = false;
+    }
+  }
+  </script>
+  <script src="footer.js"></script>
+</body>
+</html>

@@ -1,207 +1,154 @@
 <html lang="en">
 <head>
-   <link rel="stylesheet" href="style/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-    <link rel="stylesheet" href="style.css">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
-    <title>SignUp</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-    <style>
-      body {
-    background: linear-gradient(
-        to bottom,
-        rgba(0, 0, 0, 0.8),   /* أعلى الصفحة أسود شفاف */
-        rgba(0, 0, 0, 0.2)    /* أسفل الصفحة أخف شفافية */
-    );
-    min-height: 100vh;
-    margin: 0;
-  
-}
-    </style>
-    <script src="config.js"></script>
-    <script src="auth-api.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign up — Thrift It</title>
+  <link rel="stylesheet" href="style/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <script src="config.js"></script>
+  <script src="auth-api.js?v=3"></script>
 </head>
-<body>
-  <!-- Bootstrap Toast Notification -->
-<div class="toast-container position-fixed top-0 end-0 p-3">
+<body class="thriftit-auth-page">
 
-  <div id="liveToast" class="toast align-items-center text-bg-dark border-0">
-    <div class="d-flex">
-      <div class="toast-body" id="toast-msg"></div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-    </div>
-  </div>
-
-</div>
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg fixed-top navbar-light bg-white border-bottom shadow-sm">
-  <div class="container-fluid">
-    <!-- Logo نصي -->
-    <a class="navbar-brand d-flex align-items-center py-2" href="index.html">
-      <img src="images/thriftit-logo.png" alt="Thrift It" class="thriftit-navbar-logo">
-    </a>
-
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="seller.html">Sell Your Item</a></li>
-      </ul>
-
-      <div class="d-flex align-items-center gap-3">
-        
+  <div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="liveToast" class="toast align-items-center text-bg-dark border-0">
+      <div class="d-flex">
+        <div class="toast-body" id="toast-msg"></div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
       </div>
     </div>
   </div>
-</nav>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="container d-flex justify-content-center align-items-center vh-100">
-  <div class="card p-4 shadow" style="width: 350px;">
-    
-    <h3 class="text-center mb-4">Sign Up</h3>
-
-    <form id="signupForm">
-      
-      <div class="mb-3">
-        <label class="form-label">First name</label>
-        <input type="text" id="firstName" class="form-control" placeholder="First name" required>
+  <nav class="navbar navbar-expand-lg fixed-top navbar-light thriftit-navbar">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center py-2" href="index.html">
+        <img src="images/thriftit-logo.png" alt="Thrift It" class="thriftit-navbar-logo">
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="women.html">Women</a></li>
+          <li class="nav-item"><a class="nav-link" href="men.html">Men</a></li>
+          <li class="nav-item">
+            <a class="nav-link navbar-sell-nav" href="seller.html">Sell your item</a>
+          </li>
+        </ul>
+        <div class="d-flex align-items-center gap-3">
+          <form class="navbar-search-form" role="search" onsubmit="goToSearch(event)">
+            <input class="navbar-search-input" type="search" placeholder="Search" id="searchInput" autocomplete="off">
+            <button type="submit" class="navbar-search-btn" aria-label="Search">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+          </form>
+          <a href="wishlist.html" class="wishlist-link" aria-label="Wishlist" title="Wishlist">
+            <i class="fa-solid fa-heart"></i>
+          </a>
+          <a href="cart.html" class="cart-link">
+            <i class="fa-solid fa-cart-shopping"></i>
+          </a>
+          <a href="login.html" id="loginBtn" class="btn btn-outline-dark btn-sm">Login</a>
+          <a href="signup.html" id="signupBtn" class="btn btn-outline-dark btn-sm">Sign Up</a>
+          <a href="profile.html" id="username" class="sign-link text-decoration-none align-middle" style="display:none;"></a>
+        </div>
       </div>
-
-      <div class="mb-3">
-        <label class="form-label">Last name</label>
-        <input type="text" id="lastName" class="form-control" placeholder="Last name" required>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Email</label>
-        <input type="email" id="email" class="form-control" placeholder="Enter your email" required>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Password</label>
-        <input type="password" id="password" class="form-control" placeholder="Create password" required>
-      </div>
-     <div class="mb-3">
-       <label class="form-label">Confirm Password</label>
-       <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm password" required>
     </div>
-      <button type="submit" class="btn btn-dark w-100">Sign Up</button>
+  </nav>
 
-      <p class="text-center mt-3">
-        Already have an account?
-        <a href="login.html">Login</a>
-      </p>
+  <div class="auth-split">
+    <aside class="auth-split__hero" aria-hidden="true">
+      <div class="auth-split__hero-inner">
+        <h2 class="auth-split__hero-title">Why Thrift It</h2>
+        <div class="auth-split__hero-line"></div>
+        <ul class="auth-split__benefits">
+          <li>
+            <span class="auth-split__check"><i class="fa-solid fa-check"></i></span>
+            Unique vintage &amp; second-hand finds
+          </li>
+          <li>
+            <span class="auth-split__check"><i class="fa-solid fa-check"></i></span>
+            Buy and sell in one place — no hassle
+          </li>
+          <li>
+            <span class="auth-split__check"><i class="fa-solid fa-check"></i></span>
+            Give clothes a second life
+          </li>
+        </ul>
+      </div>
+    </aside>
 
-    </form>
+    <section class="auth-split__form-panel">
+      <div class="auth-split__form-wrap auth-split__form-wrap--wide">
+        <h1 class="auth-split__heading">Sign up</h1>
+        <p class="auth-split__sub">Join Thrift It to shop unique pieces and sell your own.</p>
 
+        <form id="signupForm">
+          <div class="auth-field-row">
+            <div class="auth-field">
+              <label for="firstName">First name</label>
+              <input type="text" id="firstName" placeholder="First name" autocomplete="given-name" required>
+            </div>
+            <div class="auth-field">
+              <label for="lastName">Last name</label>
+              <input type="text" id="lastName" placeholder="Last name" autocomplete="family-name" required>
+            </div>
+          </div>
+          <div class="auth-field">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Email" autocomplete="email" required>
+          </div>
+          <div class="auth-field">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Password" autocomplete="new-password" required>
+          </div>
+          <div class="auth-field">
+            <label for="confirmPassword">Confirm password</label>
+            <input type="password" id="confirmPassword" placeholder="Confirm password" autocomplete="new-password" required>
+          </div>
+          <button type="submit" class="btn auth-submit">Sign up</button>
+          <p class="auth-form-switch">
+            Already have an account?
+            <a href="login.html" class="auth-switch-link">Log in</a>
+          </p>
+        </form>
+      </div>
+    </section>
   </div>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<script>
-document.getElementById("signupForm").addEventListener("submit", async function(e){
-  e.preventDefault();
-
-  let firstName = document.getElementById("firstName").value.trim();
-  let lastName = document.getElementById("lastName").value.trim();
-  let email = document.getElementById("email").value.trim().toLowerCase();
-  let password = document.getElementById("password").value.trim();
-  let confirmPassword = document.getElementById("confirmPassword").value.trim();
-
-  if (firstName === "" || lastName === "" || email === "" || password === "" || confirmPassword === "") {
-    showToast("Please fill all fields");
-    return;
-  }
-
-  if (password.length < 6) {
-    showToast("Password must be at least 6 characters");
-    return;
-  }
-
-  if (password !== confirmPassword) {
-    showToast("Passwords do not match ❌");
-    return;
-  }
-
-  try {
-    await apiRegister(firstName, lastName, email, password);
-    showToast("Account created successfully 🎉");
-    setTimeout(function () {
-      window.location.href = "index.html";
-    }, 350);
-  } catch (err) {
-    var msg = (err && err.message) || "Sign up failed";
-    showToast(msg);
-    if (msg.indexOf("Please log in") !== -1) {
-      setTimeout(function () {
-        window.location.href = "login.html";
-      }, 1600);
-    }
-  }
-});
-// Show Bootstrap Toast instead of alert()
-function showToast(message) {
-  const toastEl = document.getElementById('liveToast');
-  const toastMsg = document.getElementById('toast-msg');
-
-  toastMsg.innerText = message;
-
-  const toast = new bootstrap.Toast(toastEl);
-  toast.show();
-}
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+<script src="footer.js"></script>
+  <script src="script/bootstrap.min.js"></script>
+  <script src="index.js"></script>
+  <script>
+    document.getElementById("signupForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      var firstName = document.getElementById("firstName").value.trim();
+      var lastName = document.getElementById("lastName").value.trim();
+      var email = document.getElementById("email").value.trim().toLowerCase();
+      var password = document.getElementById("password").value.trim();
+      var confirmPassword = document.getElementById("confirmPassword").value.trim();
+      if (!firstName || !lastName || !email || !password || !confirmPassword) {
+        showToast("Please fill all fields");
+        return;
+      }
+      if (password.length < 6) {
+        showToast("Password must be at least 6 characters");
+        return;
+      }
+      if (password !== confirmPassword) {
+        showToast("Passwords do not match");
+        return;
+      }
+      try {
+        await apiRegister(firstName, lastName, email, password);
+        showToast("Account created");
+        setTimeout(function () { window.location.href = "index.html"; }, 350);
+      } catch (err) {
+        showToast((err && err.message) || "Could not sign up");
+      }
+    });
+  </script>
+  </body>
 </html>

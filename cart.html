@@ -7,31 +7,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
-    <title>Thriftit</title>
+    <title>Your Cart — Thrift It</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-     <style>
-    body {
-  margin: 0;
-  min-height: 100vh;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.8),
-    rgba(0, 0, 0, 0.2)
-  );
-}
-    </style>
     <script src="config.js"></script>
-    <script src="app-api.js"></script>
+    <script src="auth-api.js?v=3"></script>
+    <script src="products-api.js?v=4"></script>
+    <script src="app-api.js?v=11"></script>
   </head>
 
-
-  
-<body>
-  <!-- Bootstrap Toast Notification -->
+<body class="thriftit-bag-page">
   <div class="toast-container position-fixed top-0 end-0 p-3">
 
-  <div id="liveToast" class="toast align-items-center text-bg-dark border-0">
+  <div id="liveToast" class="toast thriftit-toast align-items-center text-bg-dark border-0">
     <div class="d-flex">
       <div class="toast-body" id="toast-msg"></div>
       <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
@@ -47,41 +34,48 @@
 
 
 
-
-
-
-<nav class="navbar navbar-expand-lg fixed-top navbar-light bg-white border-bottom shadow-sm" style="z-index:9999;">
+<nav class="navbar navbar-expand-lg fixed-top navbar-light thriftit-navbar" style="z-index:9999;">
 
   <div class="container-fluid">
 
-    <!-- Logo -->
     <a class="navbar-brand d-flex align-items-center py-2" href="index.html">
       <img src="images/thriftit-logo.png" alt="Thrift It" class="thriftit-navbar-logo">
     </a>
 
-    <!-- Toggle -->
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
 
-      <!-- Links -->
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="women.html">Woman</a></li>
-        <li class="nav-item"><a class="nav-link" href="men.html">Man</a></li>
-        <li class="nav-item"><a class="nav-link" href="seller.html">Sell Your Item</a></li>
+        <li class="nav-item"><a class="nav-link" href="women.html">Women</a></li>
+        <li class="nav-item"><a class="nav-link" href="men.html">Men</a></li>
+        <li class="nav-item">
+          <a class="nav-link navbar-sell-nav" href="seller.html">Sell your item</a>
+        </li>
       </ul>
 
       <div class="d-flex align-items-center gap-3">
+        <form class="navbar-search-form" role="search" onsubmit="goToSearch(event)">
+          <input class="navbar-search-input" type="search" placeholder="Search" id="searchInput" autocomplete="off">
+          <button type="submit" class="navbar-search-btn" aria-label="Search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </button>
+        </form>
         <a href="wishlist.html" class="wishlist-link" aria-label="Wishlist" title="Wishlist">
           <i class="fa-solid fa-heart"></i>
         </a>
+        <a href="cart.html" class="cart-link" aria-label="Cart" title="Cart">
+          <i class="fa-solid fa-cart-shopping"></i>
+        </a>
+        <a href="login.html" id="loginBtn" class="btn btn-outline-dark btn-sm">Login</a>
+        <a href="signup.html" id="signupBtn" class="btn btn-outline-dark btn-sm">Sign Up</a>
+        <a href="profile.html" id="username" class="sign-link text-decoration-none align-middle" style="display:none;"></a>
       </div>
 
     </div>
   </div>
-
 </nav>
 
 
@@ -93,49 +87,40 @@
 
 
 
+<div class="container thriftit-page-section mt-5 pt-5 pb-5">
+  <header class="thriftit-bag-header">
+    <div class="thriftit-bag-header__icon" aria-hidden="true">
+      <i class="fa-solid fa-cart-shopping"></i>
+    </div>
+    <h1 class="thriftit-page-heading">Your Cart</h1>
+    <p class="thriftit-bag-subtitle">Review your picks before checkout</p>
+  </header>
 
+  <div class="thriftit-bag-layout" id="cart-layout">
+    <div class="thriftit-bag-panel">
+      <div class="thriftit-bag-list" id="cart-list" role="list" aria-live="polite"></div>
+    </div>
 
-
-
-
-
-
-
-
-
-
-<div class="container mt-5 pt-5">
-  <h2>Your Cart</h2>
-
-  <div class="table-responsive">
-    <table class="table table-dark table-striped mt-3">
-      <thead>
-        <tr>
-          <th>Product</th>
-          <th>Color</th>
-          <th>Size</th>
-          <th>Price</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-
-      <tbody id="cart-body"></tbody>
-    </table>
-  </div>
-
-  <h4 class="text-end">
-    Grand Total: <span id="grand-total">0</span> EGP
-  </h4>
-
-  <div class="text-end mt-3">
-    <button id="checkout-btn" class="btn btn-success btn-lg">
-      Checkout
-    </button>
+    <aside class="thriftit-bag-panel thriftit-bag-summary" id="cart-summary">
+      <h2 class="thriftit-bag-summary__title">Order summary</h2>
+      <div class="thriftit-bag-summary__row">
+        <span>Items</span>
+        <span id="cart-count">0</span>
+      </div>
+      <div class="thriftit-bag-summary__row thriftit-bag-summary__row--total">
+        <span>Subtotal</span>
+        <strong><span id="grand-total">0</span> EGP</strong>
+      </div>
+      <p class="thriftit-bag-summary__note">Shipping is calculated at checkout (Cairo &amp; Giza only).</p>
+      <button type="button" id="checkout-btn" class="thriftit-bag-btn thriftit-bag-btn--primary thriftit-bag-btn--block">
+        Proceed to checkout
+      </button>
+      <p class="thriftit-bag-summary__links">
+        <a href="shopall.html">Continue shopping</a>
+      </p>
+    </aside>
   </div>
 </div>
-
-
-
 
 
 
@@ -165,77 +150,110 @@
 
 
 <script>
-// =====================
-// CHECK LOGIN (IMPORTANT)
-// =====================
-let currentUser = JSON.parse(localStorage.getItem("currentUser"));
-
-if (!currentUser) {
-  showToast("Please login first ❌");
+if (!isLoggedIn()) {
   window.location.href = "login.html";
 }
 
-// =====================
-// LOAD CART (backend)
-// =====================
+function renderBagItem(item, actionsHtml) {
+  var price = parseFloat(item.price) || 0;
+  var pid = encodeURIComponent(item.id || "");
+  var img = escapeAttr(item.image || BAG_IMG_PLACEHOLDER);
+  var name = escapeHtml(item.name || "Item");
+  return (
+    '<article class="thriftit-bag-item" role="listitem">' +
+    '<a href="product.html?id=' + pid + '" class="thriftit-bag-item__thumb">' +
+    '<img src="' + img + '" alt="" loading="lazy" width="96" height="96" onerror="this.onerror=null;this.src=\'' +
+    BAG_IMG_PLACEHOLDER +
+    "'\">" +
+    "</a>" +
+    '<div class="thriftit-bag-item__body">' +
+    '<h2 class="thriftit-bag-item__title"><a href="product.html?id=' + pid + '">' + name + "</a></h2>" +
+    '<ul class="thriftit-bag-item__meta">' +
+    "<li><span>Color</span> " + escapeHtml(item.color || "—") + "</li>" +
+    "<li><span>Size</span> " + escapeHtml(item.size || "—") + "</li>" +
+    "</ul>" +
+    '<p class="thriftit-bag-item__price">' + price + " EGP</p>" +
+    "</div>" +
+    '<div class="thriftit-bag-item__actions">' + actionsHtml + "</div>" +
+    "</article>"
+  );
+}
+
 async function loadCart() {
-  const tbody = document.getElementById("cart-body");
-  const grandTotal = document.getElementById("grand-total");
+  var listEl = document.getElementById("cart-list");
+  var grandTotal = document.getElementById("grand-total");
+  var cartCount = document.getElementById("cart-count");
+  var cartSummary = document.getElementById("cart-summary");
+  var cartLayout = document.getElementById("cart-layout");
+  var checkoutBtn = document.getElementById("checkout-btn");
 
-  tbody.innerHTML =
-    '<tr><td colspan="5" class="text-center py-3 text-muted">Loading cart…</td></tr>';
+  listEl.innerHTML =
+    '<div class="thriftit-bag-loading"><i class="fa-solid fa-spinner fa-spin"></i><p>Loading your cart…</p></div>';
 
-  let userCart = [];
+  var userCart = [];
   try {
     userCart = await getCartItems();
   } catch (err) {
     console.error(err);
-    tbody.innerHTML =
-      '<tr><td colspan="5" class="text-center py-5 text-danger">Could not load cart. Log in and ensure your token is valid.</td></tr>';
-    grandTotal.innerText = 0;
+    var errMsg =
+      err && err.message
+        ? String(err.message)
+        : "Could not load your cart.";
+    if (/401|token|unauthorized|log in/i.test(errMsg)) {
+      errMsg = "Session expired — please log in again.";
+    }
+    listEl.innerHTML =
+      '<div class="thriftit-bag-error"><p>' +
+      escapeHtml(errMsg) +
+      "</p><p class=\"mt-2\"><a href=\"login.html\" class=\"thriftit-bag-btn thriftit-bag-btn--primary\">Log in</a></p></div>";
+    grandTotal.innerText = "0";
+    cartCount.innerText = "0";
+    if (checkoutBtn) checkoutBtn.disabled = true;
     return;
   }
 
-  tbody.innerHTML = "";
-  let total = 0;
+  var total = 0;
+  listEl.innerHTML = "";
 
   if (userCart.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="5" class="text-center py-5 text-muted">
-          Your cart is empty 🛒
-        </td>
-      </tr>
-    `;
-    grandTotal.innerText = 0;
+    cartLayout.classList.add("thriftit-bag-layout--single");
+    if (cartSummary) cartSummary.style.display = "none";
+    listEl.innerHTML =
+      '<div class="thriftit-bag-empty">' +
+      '<i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>' +
+      "<p>Your cart is empty — find something you love in the shop.</p>" +
+      '<a href="shopall.html" class="thriftit-bag-btn thriftit-bag-btn--primary">Browse shop</a>' +
+      "</div>";
+    grandTotal.innerText = "0";
+    cartCount.innerText = "0";
+    if (checkoutBtn) checkoutBtn.disabled = true;
     return;
   }
 
-  userCart.forEach((item) => {
-    let price = parseFloat(item.price) || 0;
+  cartLayout.classList.remove("thriftit-bag-layout--single");
+  if (cartSummary) cartSummary.style.display = "";
+  if (checkoutBtn) checkoutBtn.disabled = false;
+
+  userCart.forEach(function (item) {
+    var price = parseFloat(item.price) || 0;
     total += price;
-    const safeLine = String(item._lineId || "").replace(/"/g, "&quot;");
-    const safePid = String(item.id || "").replace(/"/g, "&quot;");
-    tbody.innerHTML += `
-      <tr>
-        <td><img src="${item.image}" width="60" class="me-2 rounded" alt="">${item.name}</td>
-        <td>${item.color || "-"}</td>
-        <td>${item.size || "-"}</td>
-        <td>${price} EGP</td>
-        <td>
-          <button type="button" class="btn btn-danger btn-sm" data-line-id="${safeLine}" data-product-id="${safePid}">
-            Remove
-          </button>
-        </td>
-      </tr>
-    `;
+    var safeLine = escapeAttr(item._lineId || "");
+    var safePid = escapeAttr(item.id || "");
+    var actions =
+      '<button type="button" class="thriftit-bag-btn thriftit-bag-btn--danger" data-line-id="' +
+      safeLine +
+      '" data-product-id="' +
+      safePid +
+      '"><i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove</button>';
+    listEl.innerHTML += renderBagItem(item, actions);
   });
 
-  tbody.querySelectorAll(".btn-danger[data-product-id]").forEach(function (btn) {
+  listEl.querySelectorAll("[data-product-id].thriftit-bag-btn--danger").forEach(function (btn) {
     btn.addEventListener("click", async function () {
       try {
         await removeCartLine(btn.getAttribute("data-line-id"), btn.getAttribute("data-product-id"));
         await loadCart();
+        showToast("Removed from cart");
       } catch (e) {
         showToast((e && e.message) || "Could not remove item");
       }
@@ -243,14 +261,12 @@ async function loadCart() {
   });
 
   grandTotal.innerText = total;
+  cartCount.innerText = String(userCart.length);
 }
 
-// =====================
-// CHECKOUT BUTTON
-// =====================
 document.getElementById("checkout-btn")?.addEventListener("click", async function () {
-  if (!currentUser) {
-    showToast("Please login first ❌");
+  if (!isLoggedIn()) {
+    showToast("Please login first");
     window.location.href = "login.html";
     return;
   }
@@ -267,86 +283,10 @@ document.getElementById("checkout-btn")?.addEventListener("click", async functio
   }
 });
 
-// =====================
-// INIT
-// =====================
 loadCart();
-
-
-
-
-
-
-
- // This function shows a Bootstrap toast notification instead of using alert()
-function showToast(message) {
-  const toastEl = document.getElementById('liveToast');
-  const toastMsg = document.getElementById('toast-msg');
-
-  toastMsg.innerText = message;
-
-  const toast = new bootstrap.Toast(toastEl);
-  toast.show();
-}
 </script>
 <script src="script/bootstrap.min.js"></script>
 <script src="index.js"></script>
-
-
-<!-- FOOTER -->
-<footer class="text-white mt-5 pt-5 pb-4" style="background: rgba(0,0,0,0.9);">
-
-  <div class="container">
-    <div class="row">
-
-      <!-- BRAND -->
-      <div class="col-md-4 mb-3">
-        <h4 class="fw-bold">Thrift It</h4>
-
-        <p class="text-light">
-          Buy and sell second-hand fashion safely, easily, and affordably.
-        </p>
-
-        <!-- SOCIAL ICONS -->
-        <div class="d-flex gap-3 mt-3">
-          <a href="#" class="text-light fs-5"><i class="fa-brands fa-facebook"></i></a>
-          <a href="#" class="text-light fs-5"><i class="fa-brands fa-instagram"></i></a>
-          <a href="#" class="text-light fs-5"><i class="fa-brands fa-tiktok"></i></a>
-        </div>
-      </div>
-
-      <!-- PAYMENT & DELIVERY -->
-      <div class="col-md-4 mb-3">
-        <h5 class="fw-bold">Payment & Delivery</h5>
-
-        <ul class="list-unstyled text-light">
-          <li>✔ Cash on Delivery & Visa payments available</li>
-          <li>✔ You can inspect the item with the courier (5–10 minutes)</li>
-          <li>✔ Delivery available in Cairo & Giza only</li>
-        </ul>
-      </div>
-
-      <!-- LINKS -->
-      <div class="col-md-4 mb-3">
-        <h5 class="fw-bold">Quick Links</h5>
-
-        <ul class="list-unstyled">
-          <li><a href="index.html" class="text-light text-decoration-none">Home</a></li>
-          <li><a href="women.html" class="text-light text-decoration-none">Woman</a></li>
-          <li><a href="men.html" class="text-light text-decoration-none">Man</a></li>
-        </ul>
-      </div>
-
-    </div>
-
-    <hr class="border-light">
-
-    <div class="text-center text-light">
-      <small>© 2026 Thrift It. All rights reserved.</small>
-    </div>
-
-  </div>
-
-</footer>
+<script src="footer.js"></script>
 </body>
 </html>

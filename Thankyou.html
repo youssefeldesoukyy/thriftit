@@ -1,140 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Order Confirmation</title>
-
-<link rel="stylesheet" href="style/bootstrap.min.css">
-
-<style>
-body{
-  background: #0a0a0a;
-  color: white;
-  min-height: 100vh;
-  font-family: Arial, sans-serif;
-}
-
-.container{
-  max-width: 900px;
-}
-
-.thank-you{
-  font-size: 60px;
-  font-weight: 800;
-  letter-spacing: 4px;
-  text-align: center;
-  margin-top: 50px;
-  color: white;
-}
-
-.sub-text{
-  text-align: center;
-  font-size: 18px;
-  color: #cccccc;
-  margin-bottom: 40px;
-}
-
-.box{
-  background: #111;
-  border: 1px solid #222;
-  border-radius: 10px;
-  padding: 25px;
-  margin-bottom: 20px;
-}
-
-.title{
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 15px;
-  color: #ffffff;
-}
-
-.item{
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid #222;
-}
-
-.highlight{
-  color: #ffffff;
-  font-weight: bold;
-}
-
-.btn-home{
-  display: block;
-  width: 200px;
-  margin: 30px auto;
-  text-align: center;
-  padding: 10px;
-  background: white;
-  color: black;
-  text-decoration: none;
-  border-radius: 5px;
-  font-weight: bold;
-}
-
-.btn-home:hover{
-  background: #ddd;
-}
-</style>
-<script src="config.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order confirmed — Thrift It</title>
+  <link rel="stylesheet" href="style/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <link rel="stylesheet" href="style.css">
+  <script src="config.js"></script>
+  <script src="auth-api.js?v=3"></script>
 </head>
-
-<body>
-
-<div class="container">
-
-  <!-- THANK YOU -->
-  <div class="thank-you">THANK YOU</div>
-  <div class="sub-text">Your order has been placed successfully</div>
-
-  <!-- ORDER ITEMS -->
-  <div class="box">
-    <div class="title">Order Items</div>
-    <div id="order-items"></div>
-  </div>
-
-  <!-- DETAILS -->
-  <div class="box">
-    <div class="title">Order Details</div>
-
-    <p><strong>Total:</strong> <span id="order-total"></span></p>
-    <p><strong>City:</strong> <span id="order-city"></span></p>
-    <p><strong>Phone:</strong> <span id="order-phone"></span></p>
-    <p><strong>Payment:</strong> <span id="order-payment"></span></p>
-    <p><strong>Date:</strong> <span id="order-date"></span></p>
-  </div>
-
-  <a href="index.html" class="btn-home">Back to Home</a>
-
-</div>
-
-<script>
-let order = JSON.parse(localStorage.getItem("lastOrder"));
-
-if (!order) {
-  window.location.href = "index.html";
-}
-
-document.getElementById("order-total").innerText = order.total;
-document.getElementById("order-city").innerText = order.city;
-document.getElementById("order-phone").innerText = order.phone;
-document.getElementById("order-payment").innerText = order.payment;
-document.getElementById("order-date").innerText = order.date;
-
-let itemsList = document.getElementById("order-items");
-
-order.items.forEach(item => {
-  itemsList.innerHTML += `
-    <div class="item">
-      <span>${item.name}</span>
-      <span class="highlight">${item.price} EGP</span>
+<body class="thriftit-bag-page">
+  <nav class="navbar navbar-expand-lg fixed-top navbar-light thriftit-navbar" style="z-index:9999;">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center py-2" href="index.html">
+        <img src="images/thriftit-logo.png" alt="Thrift It" class="thriftit-navbar-logo">
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="women.html">Women</a></li>
+          <li class="nav-item"><a class="nav-link" href="men.html">Men</a></li>
+          <li class="nav-item">
+            <a class="nav-link navbar-sell-nav" href="seller.html">Sell your item</a>
+          </li>
+        </ul>
+        <div class="d-flex align-items-center gap-3">
+          <a href="wishlist.html" class="wishlist-link" aria-label="Wishlist" title="Wishlist">
+            <i class="fa-solid fa-heart"></i>
+          </a>
+          <a href="cart.html" class="cart-link" aria-label="Cart" title="Cart">
+            <i class="fa-solid fa-cart-shopping"></i>
+          </a>
+          <a href="login.html" id="loginBtn" class="btn btn-outline-dark btn-sm">Login</a>
+          <a href="signup.html" id="signupBtn" class="btn btn-outline-dark btn-sm">Sign Up</a>
+          <a href="profile.html" id="username" class="sign-link text-decoration-none align-middle" style="display:none;"></a>
+        </div>
+      </div>
     </div>
-  `;
-});
-</script>
+  </nav>
 
+  <div class="container thriftit-page-section mt-5 pt-5 pb-5">
+    <div class="thriftit-thankyou-success">
+      <div class="thriftit-thankyou-success__icon" aria-hidden="true">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <header class="thriftit-bag-header">
+        <h1 class="thriftit-page-heading">Order placed</h1>
+        <p class="thriftit-bag-subtitle">Thank you — your order has been confirmed. Here is your summary.</p>
+      </header>
+    </div>
+
+    <div class="thriftit-thankyou-layout">
+      <div class="thriftit-bag-panel">
+        <h2 class="thriftit-checkout-section-title">Order summary</h2>
+        <div class="thriftit-bag-list" id="order-items" role="list"></div>
+      </div>
+
+      <aside class="thriftit-bag-panel thriftit-bag-summary">
+        <h2 class="thriftit-checkout-section-title">Details</h2>
+        <p class="thriftit-thankyou-detail"><strong>Total</strong> <span id="order-total"></span></p>
+        <p class="thriftit-thankyou-detail" id="order-shipping-row" hidden>
+          <strong>Shipping</strong> <span id="order-shipping"></span>
+        </p>
+        <p class="thriftit-thankyou-detail"><strong>Address</strong> <span id="order-address"></span></p>
+        <p class="thriftit-thankyou-detail"><strong>City</strong> <span id="order-city"></span></p>
+        <p class="thriftit-thankyou-detail"><strong>Phone</strong> <span id="order-phone"></span></p>
+        <p class="thriftit-thankyou-detail"><strong>Payment</strong> <span id="order-payment"></span></p>
+        <p class="thriftit-thankyou-detail"><strong>Date</strong> <span id="order-date"></span></p>
+      </aside>
+    </div>
+
+    <div class="thriftit-thankyou-actions">
+      <a href="profile.html#leave-review" class="thriftit-bag-btn thriftit-bag-btn--primary" id="rate-seller-btn">
+        <i class="fa-solid fa-star" aria-hidden="true"></i>
+        Rate your seller
+      </a>
+      <a href="index.html" class="thriftit-bag-btn thriftit-bag-btn--ghost">
+        <i class="fa-solid fa-house" aria-hidden="true"></i>
+        Back to home
+      </a>
+      <a href="shopall.html" class="thriftit-bag-btn thriftit-bag-btn--ghost">Continue shopping</a>
+    </div>
+  </div>
+
+  <script src="script/bootstrap.min.js"></script>
+  <script>
+  (function () {
+    var order;
+    try {
+      order = JSON.parse(localStorage.getItem("lastOrder") || "null");
+    } catch (_) {
+      order = null;
+    }
+
+    if (!order || !Array.isArray(order.items) || !order.items.length) {
+      window.location.href = "index.html";
+      return;
+    }
+
+    document.getElementById("order-total").innerText = order.total || "—";
+    document.getElementById("order-city").innerText = order.city || "—";
+    document.getElementById("order-phone").innerText = order.phone || "—";
+    document.getElementById("order-payment").innerText = order.payment || "—";
+    document.getElementById("order-date").innerText = order.date || "—";
+
+    if (order.shippingFeeEgp != null) {
+      document.getElementById("order-shipping-row").hidden = false;
+      document.getElementById("order-shipping").innerText = order.shippingFeeEgp + " EGP";
+    }
+
+    var addressParts = [order.street, order.apartment, order.region].filter(Boolean);
+    document.getElementById("order-address").innerText =
+      addressParts.length ? addressParts.join(", ") : "—";
+
+    var listEl = document.getElementById("order-items");
+    order.items.forEach(function (item) {
+      var price = parseFloat(item.price) || 0;
+      var img = escapeAttr(item.image || BAG_IMG_PLACEHOLDER);
+      listEl.innerHTML +=
+        '<article class="thriftit-bag-item" role="listitem">' +
+        '<div class="thriftit-bag-item__thumb">' +
+        '<img src="' + img + '" alt="" width="96" height="96" loading="lazy" onerror="this.onerror=null;this.src=\'' +
+        BAG_IMG_PLACEHOLDER +
+        "'\">" +
+        "</div>" +
+        '<div class="thriftit-bag-item__body">' +
+        "<h2 class=\"thriftit-bag-item__title\">" + escapeHtml(item.name || "Item") + "</h2>" +
+        '<ul class="thriftit-bag-item__meta">' +
+        "<li><span>Color</span> " + escapeHtml(item.color || "—") + "</li>" +
+        "<li><span>Size</span> " + escapeHtml(item.size || "—") + "</li>" +
+        "</ul>" +
+        '<p class="thriftit-bag-item__price">' + price + " EGP</p>" +
+        "</div>" +
+        "</article>";
+    });
+  })();
+  </script>
+  <script src="footer.js"></script>
 </body>
 </html>

@@ -1,418 +1,792 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="style/bootstrap.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-    <link rel="stylesheet" href="style.css">
-    <style>
-      body {
-    background: linear-gradient(
-        to bottom,
-        rgba(0, 0, 0, 0.8),   /* أعلى الصفحة أسود شفاف */
-        rgba(0, 0, 0, 0.2)    /* أسفل الصفحة أخف شفافية */
-    );
-    min-height: 100vh;
-    margin: 0;
-  
-}
-    </style>
-    <script src="config.js"></script>
-    <script src="app-api.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout — Thrift It</title>
+  <link rel="stylesheet" href="style/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <link rel="stylesheet" href="style.css">
+  <script src="config.js"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="auth-api.js?v=3"></script>
+  <script src="products-api.js?v=4"></script>
+  <script src="app-api.js?v=7"></script>
 </head>
 
-<body class=" text-white">
-    <!-- Bootstrap Toast Notification -->
+<body class="thriftit-bag-page">
   <div class="toast-container position-fixed top-0 end-0 p-3">
-
-  <div id="liveToast" class="toast align-items-center text-bg-dark border-0">
-    <div class="d-flex">
-      <div class="toast-body" id="toast-msg"></div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-    </div>
-  </div>
-
-</div>
-
-
-
-
-
-
-
-
-
-   
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg fixed-top navbar-light bg-white border-bottom shadow-sm">
-  <div class="container-fluid">
-    <!-- Logo نصي -->
-    <a class="navbar-brand d-flex align-items-center py-2" href="index.html">
-      <img src="images/thriftit-logo.png" alt="Thrift It" class="thriftit-navbar-logo">
-    </a>
-
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="women.html">Woman</a></li>
-        <li class="nav-item"><a class="nav-link" href="men.html">Man</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Shipping</a></li>
-        <li class="nav-item"><a class="nav-link" href="seller.html">Sell Your Item</a></li>
-      </ul>
-
-      <div class="d-flex align-items-center gap-3">
-        <form class="navbar-search-form" role="search" onsubmit="goToSearch(event)">
-          <input class="navbar-search-input" type="search" placeholder="Search" id="searchInput" autocomplete="off">
-          <button type="submit" class="navbar-search-btn" aria-label="Search">
-            <i class="fa-solid fa-magnifying-glass"></i>
-          </button>
-        </form>
-
-        <a href="wishlist.html" class="wishlist-link" aria-label="Wishlist" title="Wishlist">
-          <i class="fa-solid fa-heart"></i>
-        </a>
-
-        <a href="cart.html" class="cart-link">
-          <i class="fa-solid fa-cart-shopping"></i>
-        </a>
+    <div id="liveToast" class="toast thriftit-toast align-items-center text-bg-dark border-0">
+      <div class="d-flex">
+        <div class="toast-body" id="toast-msg"></div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
       </div>
     </div>
   </div>
-</nav>
 
-<div class="container mt-5 pt-5">
-
-  <h2 class="fw-bold text-white">Checkout</h2>
-
-  <!-- CART -->
-  <div class="table-responsive mt-4">
-    <table class="table table-dark table-striped align-middle">
-      <thead>
-        <tr>
-          <th>Product</th>
-          <th>Color</th>
-          <th>Size</th>
-          <th>Price</th>
-        </tr>
-      </thead>
-      <tbody id="checkout-body"></tbody>
-    </table>
-  </div>
-
-  <!-- GRAND TOTAL -->
-  <div class="text-end mt-3">
-    <h3 class="fw-bold text-white">
-      Grand Total:
-      <span id="checkout-grand-total" class="fs-2 fw-bolder text-white"></span>
-    </h3>
-  </div>
-
-<div class="text-end mt-2 text-white">
-  <h5>
-    Shipping Fee:
-    <span id="shipping-fee">70 EGP</span>
-  </h5>
-</div>
-  <!-- DELIVERY -->
-  <h3 class="mt-4 fw-bold text-white">Delivery Details</h3>
-
-  <form id="checkout-form">
-
-    <div class="mb-2">
-      <input class="form-control" id="street" placeholder="Street" required>
-    </div>
-
-    <div class="mb-2">
-      <input class="form-control" id="apartment" placeholder="Apartment / Floor" required>
-    </div>
-
-    <div class="mb-2">
-      <input class="form-control" id="region" placeholder="Region" required>
-    </div>
-
-    <div class="mb-3">
-  <select class="form-control" id="city" required>
-    <option value="">Select City</option>
-    <option value="cairo">Cairo</option>
-    <option value="giza">Giza</option>
-  </select>
-</div>
-
-    <!-- PHONE -->
-    <div class="mb-3">
-      <input
-        type="text"
-        class="form-control"
-        id="phone"
-        placeholder="01XXXXXXXXX"
-        inputmode="numeric"
-        maxlength="11"
-        required
-        oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,11)"
-      >
-    </div>
-
-    <!-- PAYMENT -->
-    <div class="mb-3 text-white">
-      <label class="fw-bold">Payment Method</label><br>
-      <input type="radio" name="payment" value="cod" checked> Cash on Delivery<br>
-      <input type="radio" name="payment" value="visa"> Visa
-    </div>
-
-    <!-- VISA -->
-    <div id="card-details" class="d-none">
-      <input class="form-control mb-2" placeholder="Card Number">
-      <input class="form-control mb-2" placeholder="Expiry">
-      <input class="form-control mb-2" placeholder="CVV">
-    </div>
-
-    <button class="btn btn-success w-100 mt-3 fw-bold">
-      Confirm Purchase
-    </button>
-
-  </form>
-</div>
-
-
-
-
-
-
-
-
-
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="index.js"></script>
-
-<script>
-// =====================
-// TOAST
-// =====================
-function showToast(message) {
-  const toastEl = document.getElementById('liveToast');
-  const toastMsg = document.getElementById('toast-msg');
-
-  toastMsg.innerText = message;
-
-  const toast = new bootstrap.Toast(toastEl);
-  toast.show();
-}
-
-// =====================
-// CHECK LOGIN
-// =====================
-let currentUser = JSON.parse(localStorage.getItem("currentUser"));
-
-if (!currentUser) {
-  showToast("Please login first ❌");
-  window.location.href = "login.html";
-}
-
-// =====================
-// SETTINGS
-// =====================
-let shippingFee = 70;
-
-// =====================
-// LOAD CHECKOUT (backend cart)
-// =====================
-async function loadCheckout() {
-  const body = document.getElementById("checkout-body");
-  body.innerHTML =
-    '<tr><td colspan="4" class="text-center text-white py-4">Loading cart…</td></tr>';
-
-  let cart = [];
-  try {
-    cart = await getCartItems();
-  } catch (err) {
-    console.error(err);
-    body.innerHTML =
-      '<tr><td colspan="4" class="text-center text-danger py-4">Could not load cart.</td></tr>';
-    document.getElementById("checkout-grand-total").innerText = "";
-    return;
-  }
-
-  body.innerHTML = "";
-
-  let subtotal = 0;
-
-  if (cart.length === 0) {
-    body.innerHTML = `
-      <tr>
-        <td colspan="4" class="text-center text-white py-4">
-          Your cart is empty 🛒
-        </td>
-      </tr>
-    `;
-
-    document.getElementById("checkout-grand-total").innerText = "";
-    return;
-  }
-
-  cart.forEach((product) => {
-    let price = parseFloat(product.price) || 0;
-    subtotal += price;
-
-    body.innerHTML += `
-      <tr class="text-white">
-        <td>
-          <img src="${product.image}" width="50" class="me-2">
-          ${product.name}
-        </td>
-        <td>${product.color || "-"}</td>
-        <td>${product.size || "-"}</td>
-        <td>${price} EGP</td>
-      </tr>
-    `;
-  });
-
-  let grandTotal = subtotal + shippingFee;
-
-  document.getElementById("checkout-grand-total").innerText =
-    grandTotal + " EGP";
-}
-
-loadCheckout();
-
-// =====================
-// PAYMENT TOGGLE
-// =====================
-document.querySelectorAll('input[name="payment"]').forEach(radio => {
-  radio.addEventListener("change", (e) => {
-    document
-      .getElementById("card-details")
-      .classList.toggle("d-none", e.target.value !== "visa");
-  });
-});
-
-// =====================
-// SUBMIT ORDER
-// =====================
-document.getElementById("checkout-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  let cityInput = document.getElementById("city").value;
-
-  if (cityInput !== "cairo" && cityInput !== "giza") {
-    showToast("Delivery is available in Cairo & Giza only ❌");
-    return;
-  }
-
-  let cart = [];
-  try {
-    cart = await getCartItems();
-  } catch (err) {
-    showToast((err && err.message) || "Could not load cart");
-    return;
-  }
-
-  if (cart.length === 0) {
-    showToast("Cart is empty ❌");
-    return;
-  }
-
-  let orderPayload = {
-    items: cart,
-    totalLabel: document.getElementById("checkout-grand-total").innerText,
-    shippingFeeEgp: shippingFee,
-    shippingAddress: {
-      city: cityInput,
-      street: document.getElementById("street").value,
-      phone: document.getElementById("phone").value,
-    },
-    paymentMethod: document.querySelector('input[name="payment"]:checked').value,
-    placedAt: new Date().toISOString(),
-    customerEmail: currentUser.email,
-  };
-
-  let orderForThankYouPage = {
-    items: cart,
-    total: orderPayload.totalLabel,
-    city: cityInput,
-    phone: orderPayload.shippingAddress.phone,
-    payment: orderPayload.paymentMethod,
-    date: new Date().toLocaleString(),
-  };
-
-  try {
-    await placeOrder(orderPayload);
-    localStorage.setItem("lastOrder", JSON.stringify(orderForThankYouPage));
-
-    await clearServerCart();
-
-    showToast("Order placed successfully 🎉");
-
-    setTimeout(() => {
-      window.location.href = "thankyou.html";
-    }, 1000);
-  } catch (err) {
-    console.error(err);
-    showToast((err && err.message) || "Could not place order — check API");
-  }
-});
-</script>
-
-<!-- FOOTER -->
-<footer class="text-white mt-5 pt-5 pb-4" style="background: rgba(0,0,0,0.9);">
-
-  <div class="container">
-    <div class="row">
-
-      <!-- BRAND -->
-      <div class="col-md-4 mb-3">
-        <h4 class="fw-bold">Thrift It</h4>
-
-        <p class="text-light">
-          Buy and sell second-hand fashion safely, easily, and affordably.
-        </p>
-
-        <!-- SOCIAL ICONS -->
-        <div class="d-flex gap-3 mt-3">
-          <a href="#" class="text-light fs-5"><i class="fa-brands fa-facebook"></i></a>
-          <a href="#" class="text-light fs-5"><i class="fa-brands fa-instagram"></i></a>
-          <a href="#" class="text-light fs-5"><i class="fa-brands fa-tiktok"></i></a>
+  <nav class="navbar navbar-expand-lg fixed-top navbar-light thriftit-navbar" style="z-index:9999;">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center py-2" href="index.html">
+        <img src="images/thriftit-logo.png" alt="Thrift It" class="thriftit-navbar-logo">
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="women.html">Women</a></li>
+          <li class="nav-item"><a class="nav-link" href="men.html">Men</a></li>
+          <li class="nav-item">
+            <a class="nav-link navbar-sell-nav" href="seller.html">Sell your item</a>
+          </li>
+        </ul>
+        <div class="d-flex align-items-center gap-3">
+          <form class="navbar-search-form" role="search" onsubmit="goToSearch(event)">
+            <input class="navbar-search-input" type="search" placeholder="Search" id="searchInput" autocomplete="off">
+            <button type="submit" class="navbar-search-btn" aria-label="Search">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+          </form>
+          <a href="wishlist.html" class="wishlist-link" aria-label="Wishlist" title="Wishlist">
+            <i class="fa-solid fa-heart"></i>
+          </a>
+          <a href="cart.html" class="cart-link" aria-label="Cart" title="Cart">
+            <i class="fa-solid fa-cart-shopping"></i>
+          </a>
+          <a href="login.html" id="loginBtn" class="btn btn-outline-dark btn-sm">Login</a>
+          <a href="signup.html" id="signupBtn" class="btn btn-outline-dark btn-sm">Sign Up</a>
+          <a href="profile.html" id="username" class="sign-link text-decoration-none align-middle" style="display:none;"></a>
         </div>
       </div>
+    </div>
+  </nav>
 
-      <!-- PAYMENT & DELIVERY -->
-      <div class="col-md-4 mb-3">
-        <h5 class="fw-bold">Payment & Delivery</h5>
+  <div class="container thriftit-page-section mt-5 pt-5 pb-5">
+    <a href="cart.html" class="checkout-back-link">
+      <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to cart
+    </a>
 
-        <ul class="list-unstyled text-light">
-          <li>✔ Cash on Delivery & Visa payments available</li>
-          <li>✔ You can inspect the item with the courier (5–10 minutes)</li>
-          <li>✔ Delivery available in Cairo & Giza only</li>
-        </ul>
+    <header class="thriftit-bag-header">
+      <div class="thriftit-bag-header__icon" aria-hidden="true">
+        <i class="fa-solid fa-bag-shopping"></i>
+      </div>
+      <h1 class="thriftit-page-heading">Checkout</h1>
+      <p class="thriftit-bag-subtitle">Review your order and enter delivery details</p>
+    </header>
+
+    <div class="thriftit-checkout-layout">
+      <div class="thriftit-bag-panel thriftit-checkout-items-panel">
+        <h2 class="thriftit-checkout-section-title">Your items</h2>
+        <div class="thriftit-bag-list" id="checkout-list" role="list" aria-live="polite"></div>
       </div>
 
-      <!-- LINKS -->
-      <div class="col-md-4 mb-3">
-        <h5 class="fw-bold">Quick Links</h5>
+      <div class="thriftit-checkout-side">
+        <aside class="thriftit-bag-panel thriftit-bag-summary">
+          <h2 class="thriftit-bag-summary__title">Order summary</h2>
+          <div class="thriftit-bag-summary__row">
+            <span>Subtotal</span>
+            <span id="checkout-subtotal">0 EGP</span>
+          </div>
+          <div class="thriftit-bag-summary__row">
+            <span>Shipping</span>
+            <span id="shipping-fee">70 EGP</span>
+          </div>
+          <div class="thriftit-bag-summary__row thriftit-bag-summary__row--total">
+            <span>Total</span>
+            <strong><span id="checkout-grand-total">0</span> EGP</strong>
+          </div>
+          <p class="thriftit-bag-summary__note">Delivery in Cairo &amp; Giza only. Cash on delivery or Visa.</p>
+        </aside>
 
-        <ul class="list-unstyled">
-          <li><a href="index.html" class="text-light text-decoration-none">Home</a></li>
-          <li><a href="women.html" class="text-light text-decoration-none">Woman</a></li>
-          <li><a href="men.html" class="text-light text-decoration-none">Man</a></li>
-        </ul>
+        <div class="thriftit-bag-panel thriftit-checkout-form-panel">
+          <h2 class="thriftit-checkout-section-title">Delivery details</h2>
+
+          <form id="checkout-form" novalidate>
+            <div class="checkout-field">
+              <label for="street">Street</label>
+              <input class="form-control" id="street" placeholder="Street address" required>
+            </div>
+            <div class="checkout-field">
+              <label for="apartment">Apartment / floor</label>
+              <input class="form-control" id="apartment" placeholder="Building, floor, apt." required>
+            </div>
+            <div class="checkout-field">
+              <label for="region">Region / area</label>
+              <input class="form-control" id="region" placeholder="e.g. Maadi, Zamalek" required>
+            </div>
+            <div class="checkout-field">
+              <label for="city">City</label>
+              <select class="form-select" id="city" required>
+                <option value="">Select city</option>
+                <option value="cairo">Cairo</option>
+                <option value="giza">Giza</option>
+              </select>
+            </div>
+            <div class="checkout-field">
+              <label for="phone">Phone</label>
+              <input
+                type="text"
+                class="form-control"
+                id="phone"
+                placeholder="01XXXXXXXXX"
+                inputmode="numeric"
+                maxlength="11"
+                required
+                oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,11)"
+              >
+            </div>
+
+            <div class="checkout-field">
+              <label>Payment method</label>
+              <div class="checkout-payment-options">
+                <label class="checkout-payment-option">
+                  <input type="radio" name="payment" value="cod" checked>
+                  <i class="fa-solid fa-money-bill-wave" aria-hidden="true"></i>
+                  Cash on delivery
+                </label>
+                <label class="checkout-payment-option">
+                  <input type="radio" name="payment" value="visa">
+                  <i class="fa-brands fa-cc-visa" aria-hidden="true"></i>
+                  Visa
+                </label>
+              </div>
+            </div>
+
+            <div id="card-details" class="checkout-card-details d-none">
+              <div id="stripe-card-panel" class="checkout-field d-none">
+                <label for="card-element">Card</label>
+                <div id="card-element" class="thriftit-stripe-card"></div>
+                <small id="card-element-errors" class="text-danger d-block mt-1"></small>
+              </div>
+              <div id="manual-card-fields">
+              <div class="checkout-field">
+                <label for="card-number">Card number</label>
+                <input
+                  class="form-control"
+                  id="card-number"
+                  type="text"
+                  inputmode="numeric"
+                  autocomplete="cc-number"
+                  placeholder="1234 5678 9012 3456"
+                  maxlength="19"
+                  aria-describedby="card-number-hint"
+                >
+                <small id="card-number-hint" class="text-muted d-block mt-1">
+                  Visa: 16 digits. We verify the number is valid before checkout.
+                </small>
+              </div>
+              <div class="row g-2">
+                <div class="col-6">
+                  <div class="checkout-field mb-0">
+                    <label for="card-expiry">Expiry</label>
+                    <input
+                      class="form-control"
+                      id="card-expiry"
+                      type="text"
+                      inputmode="numeric"
+                      autocomplete="cc-exp"
+                      placeholder="MM/YY"
+                      maxlength="5"
+                    >
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="checkout-field mb-0">
+                    <label for="card-cvv">CVV</label>
+                    <input
+                      class="form-control"
+                      id="card-cvv"
+                      type="password"
+                      inputmode="numeric"
+                      autocomplete="cc-csc"
+                      placeholder="123"
+                      maxlength="3"
+                    >
+                  </div>
+                </div>
+              </div>
+              </div>
+            </div>
+
+            <button type="submit" id="checkout-submit-btn" class="thriftit-bag-btn thriftit-bag-btn--primary thriftit-bag-btn--block mt-2">
+              <i class="fa-solid fa-check" aria-hidden="true"></i>
+              Confirm purchase
+            </button>
+          </form>
+        </div>
       </div>
-
     </div>
-
-    <hr class="border-light">
-
-    <div class="text-center text-light">
-      <small>© 2026 Thrift It. All rights reserved.</small>
-    </div>
-
   </div>
+<script src="script/bootstrap.min.js"></script>
+  <script src="index.js"></script>
+  <script>
+  if (!isLoggedIn()) {
+    window.location.href = "login.html";
+  }
 
-</footer>
+  var shippingFee = 70;
+  var SAVED_ADDRESS_KEY = "thriftitSavedAddress";
+
+  function savedAddressMap() {
+    try {
+      return JSON.parse(localStorage.getItem(SAVED_ADDRESS_KEY) || "{}");
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function loadSavedDeliveryDetails() {
+    if (!currentUser || !currentUser.email) return;
+    var saved =
+      savedAddressMap()[String(currentUser.email).toLowerCase()];
+    if (!saved) return;
+
+    var streetEl = document.getElementById("street");
+    var apartmentEl = document.getElementById("apartment");
+    var regionEl = document.getElementById("region");
+    var cityEl = document.getElementById("city");
+    var phoneEl = document.getElementById("phone");
+
+    if (streetEl && saved.street) streetEl.value = saved.street;
+    if (apartmentEl && saved.apartment) apartmentEl.value = saved.apartment;
+    if (regionEl && saved.region) regionEl.value = saved.region;
+    if (cityEl && saved.city) cityEl.value = saved.city;
+    if (phoneEl && saved.phone) phoneEl.value = saved.phone;
+  }
+
+  function saveDeliveryDetails() {
+    if (!currentUser || !currentUser.email) return;
+    var map = savedAddressMap();
+    map[String(currentUser.email).toLowerCase()] = {
+      street: document.getElementById("street").value.trim(),
+      apartment: document.getElementById("apartment").value.trim(),
+      region: document.getElementById("region").value.trim(),
+      city: document.getElementById("city").value,
+      phone: document.getElementById("phone").value.trim(),
+    };
+    localStorage.setItem(SAVED_ADDRESS_KEY, JSON.stringify(map));
+  }
+
+  function setCheckoutBusy(busy) {
+    if (!checkoutSubmitBtn) return;
+    checkoutSubmitBtn.disabled = !!busy;
+    if (busy) {
+      checkoutSubmitBtn.dataset.label =
+        checkoutSubmitBtn.dataset.label || checkoutSubmitBtn.innerHTML;
+      checkoutSubmitBtn.innerHTML =
+        '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Processing…';
+    } else if (checkoutSubmitBtn.dataset.label) {
+      checkoutSubmitBtn.innerHTML = checkoutSubmitBtn.dataset.label;
+    }
+  }
+
+  function validateDeliveryForm() {
+    var street = document.getElementById("street");
+    var apartment = document.getElementById("apartment");
+    var region = document.getElementById("region");
+    var city = document.getElementById("city");
+    var phone = document.getElementById("phone");
+
+    if (!street || !String(street.value).trim()) {
+      showToast("Please enter your street address");
+      if (street) street.focus();
+      return false;
+    }
+    if (!apartment || !String(apartment.value).trim()) {
+      showToast("Please enter apartment / floor");
+      if (apartment) apartment.focus();
+      return false;
+    }
+    if (!region || !String(region.value).trim()) {
+      showToast("Please enter your region / area");
+      if (region) region.focus();
+      return false;
+    }
+    if (!city || !city.value) {
+      showToast("Please select Cairo or Giza");
+      if (city) city.focus();
+      return false;
+    }
+    if (city.value !== "cairo" && city.value !== "giza") {
+      showToast("Delivery is available in Cairo & Giza only");
+      if (city) city.focus();
+      return false;
+    }
+    var phoneVal = phone ? String(phone.value).replace(/\D/g, "") : "";
+    if (!/^01\d{9}$/.test(phoneVal)) {
+      showToast("Enter a valid Egyptian phone (11 digits, starts with 01)");
+      if (phone) phone.focus();
+      return false;
+    }
+    return true;
+  }
+
+  function renderCheckoutItem(item) {
+    var price = parseFloat(item.price) || 0;
+    var pid = encodeURIComponent(item.id || "");
+    var safeLine = escapeAttr(item._lineId || "");
+    var safePid = escapeAttr(item.id || "");
+    var img = escapeAttr(item.image || BAG_IMG_PLACEHOLDER);
+    var name = escapeHtml(item.name || "Item");
+    var removeBtn =
+      '<button type="button" class="thriftit-bag-btn thriftit-bag-btn--danger" data-line-id="' +
+      safeLine +
+      '" data-product-id="' +
+      safePid +
+      '"><i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove</button>';
+    return (
+      '<article class="thriftit-bag-item thriftit-bag-item--checkout" role="listitem">' +
+      '<a href="product.html?id=' + pid + '" class="thriftit-bag-item__thumb">' +
+      '<img src="' + img + '" alt="" loading="lazy" width="72" height="72" onerror="this.onerror=null;this.src=\'' +
+      BAG_IMG_PLACEHOLDER +
+      "'\">" +
+      "</a>" +
+      '<div class="thriftit-bag-item__body">' +
+      '<h2 class="thriftit-bag-item__title"><a href="product.html?id=' + pid + '">' + name + "</a></h2>" +
+      '<ul class="thriftit-bag-item__meta">' +
+      "<li><span>Color</span> " + escapeHtml(item.color || "—") + "</li>" +
+      "<li><span>Size</span> " + escapeHtml(item.size || "—") + "</li>" +
+      "</ul>" +
+      '<p class="thriftit-bag-item__price">' + price + " EGP</p>" +
+      "</div>" +
+      '<div class="thriftit-bag-item__actions">' + removeBtn + "</div>" +
+      "</article>"
+    );
+  }
+
+  function wireCheckoutRemoveButtons() {
+    var listEl = document.getElementById("checkout-list");
+    if (!listEl) return;
+    listEl.querySelectorAll("[data-product-id].thriftit-bag-btn--danger").forEach(function (btn) {
+      btn.addEventListener("click", async function () {
+        try {
+          await removeCartLine(
+            btn.getAttribute("data-line-id"),
+            btn.getAttribute("data-product-id")
+          );
+          showToast("Removed from cart");
+          await loadCheckout();
+        } catch (e) {
+          showToast((e && e.message) || "Could not remove item");
+        }
+      });
+    });
+  }
+
+  async function loadCheckout() {
+    var listEl = document.getElementById("checkout-list");
+    var subtotalEl = document.getElementById("checkout-subtotal");
+    var grandEl = document.getElementById("checkout-grand-total");
+
+    listEl.innerHTML =
+      '<div class="thriftit-bag-loading"><i class="fa-solid fa-spinner fa-spin"></i><p>Loading your order…</p></div>';
+
+    var cart = [];
+    try {
+      cart = await getCartItems();
+    } catch (err) {
+      console.error(err);
+      listEl.innerHTML =
+        '<div class="thriftit-bag-error"><p>' +
+        escapeHtml((err && err.message) || "Could not load cart.") +
+        '</p><p class="mt-2"><a href="cart.html" class="thriftit-bag-btn thriftit-bag-btn--primary">Return to cart</a></p></div>';
+      subtotalEl.innerText = "0 EGP";
+      grandEl.innerText = "0";
+      return;
+    }
+
+    listEl.innerHTML = "";
+    var subtotal = 0;
+
+    if (cart.length === 0) {
+      listEl.innerHTML =
+        '<div class="thriftit-bag-empty">' +
+        '<i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>' +
+        "<p>Your cart is empty.</p>" +
+        '<a href="shopall.html" class="thriftit-bag-btn thriftit-bag-btn--primary">Browse shop</a>' +
+        "</div>";
+      subtotalEl.innerText = "0 EGP";
+      grandEl.innerText = "0";
+      document.getElementById("checkout-form").querySelector("button[type=submit]").disabled = true;
+      return;
+    }
+
+    cart.forEach(function (product) {
+      subtotal += parseFloat(product.price) || 0;
+      listEl.innerHTML += renderCheckoutItem(product);
+    });
+
+    wireCheckoutRemoveButtons();
+
+    subtotalEl.innerText = subtotal + " EGP";
+    grandEl.innerText = String(subtotal + shippingFee);
+    var submitBtn = document.querySelector("#checkout-form button[type=submit]");
+    if (submitBtn) submitBtn.disabled = false;
+  }
+
+  loadCheckout();
+  loadSavedDeliveryDetails();
+
+  var cardNumberEl = document.getElementById("card-number");
+  var cardExpiryEl = document.getElementById("card-expiry");
+  var cardCvvEl = document.getElementById("card-cvv");
+  var checkoutSubmitBtn = document.getElementById("checkout-submit-btn");
+  var checkoutFormEl = document.getElementById("checkout-form");
+  var stripeInstance = null;
+  var stripeCardElement = null;
+  var stripeReady = false;
+  var runtimeStripePk = "";
+
+  function getStripePublishableKey() {
+    if (runtimeStripePk) return runtimeStripePk;
+    if (typeof STRIPE_PUBLISHABLE_KEY !== "undefined" && STRIPE_PUBLISHABLE_KEY) {
+      return String(STRIPE_PUBLISHABLE_KEY).trim();
+    }
+    return "";
+  }
+
+  function usesStripeForCards() {
+    return !!getStripePublishableKey();
+  }
+
+  async function loadStripePublishableKey() {
+    if (typeof STRIPE_PUBLISHABLE_KEY !== "undefined" && STRIPE_PUBLISHABLE_KEY) {
+      runtimeStripePk = String(STRIPE_PUBLISHABLE_KEY).trim();
+      return runtimeStripePk;
+    }
+    if (typeof fetchStripePublishableKey === "function") {
+      runtimeStripePk = await fetchStripePublishableKey();
+    }
+    return runtimeStripePk;
+  }
+
+  function initStripeCard() {
+    if (stripeReady || !usesStripeForCards() || typeof Stripe === "undefined") {
+      return stripeReady;
+    }
+    var mountEl = document.getElementById("card-element");
+    if (!mountEl) return false;
+    stripeInstance = Stripe(getStripePublishableKey());
+    stripeCardElement = stripeInstance.elements().create("card", {
+      hidePostalCode: true,
+      disableLink: true,
+      style: {
+        base: {
+          fontSize: "16px",
+          color: "#152820",
+          "::placeholder": { color: "#6b7280" },
+        },
+      },
+    });
+    stripeCardElement.mount("#card-element");
+    stripeCardElement.on("change", function (event) {
+      var errEl = document.getElementById("card-element-errors");
+      if (errEl) errEl.textContent = event.error ? event.error.message : "";
+    });
+    stripeReady = true;
+    return true;
+  }
+
+  function setCardFieldsRequired(required) {
+    [cardNumberEl, cardExpiryEl, cardCvvEl].forEach(function (el) {
+      if (el) el.required = !!required;
+    });
+  }
+
+  /** Standard card checksum (Luhn / mod 10) — used by Visa, Mastercard, etc. */
+  function isValidLuhn(cardDigits) {
+    var sum = 0;
+    var doubleDigit = false;
+    for (var i = cardDigits.length - 1; i >= 0; i--) {
+      var n = parseInt(cardDigits.charAt(i), 10);
+      if (doubleDigit) {
+        n *= 2;
+        if (n > 9) n -= 9;
+      }
+      sum += n;
+      doubleDigit = !doubleDigit;
+    }
+    return sum % 10 === 0;
+  }
+
+  function formatCardNumberInput() {
+    if (!cardNumberEl) return;
+    var digits = cardNumberEl.value.replace(/\D/g, "").slice(0, 16);
+    var grouped = digits.match(/.{1,4}/g);
+    cardNumberEl.value = grouped ? grouped.join(" ") : digits;
+  }
+
+  function formatCardExpiryInput() {
+    if (!cardExpiryEl) return;
+    var digits = cardExpiryEl.value.replace(/\D/g, "").slice(0, 4);
+
+    if (digits.length === 1 && parseInt(digits.charAt(0), 10) > 1) {
+      digits = "0" + digits.charAt(0);
+    }
+
+    if (digits.length >= 2) {
+      var month = parseInt(digits.slice(0, 2), 10);
+      if (month > 12) {
+        digits = "12" + digits.slice(2);
+      } else if (month === 0) {
+        digits = "01" + digits.slice(2);
+      }
+    }
+
+    if (digits.length > 2) {
+      cardExpiryEl.value = digits.slice(0, 2) + "/" + digits.slice(2);
+    } else {
+      cardExpiryEl.value = digits;
+    }
+  }
+
+  function formatCardCvvInput() {
+    if (!cardCvvEl) return;
+    cardCvvEl.value = cardCvvEl.value.replace(/\D/g, "").slice(0, 3);
+  }
+
+  function validateCardPayment() {
+    if (usesStripeForCards() && stripeReady) {
+      return true;
+    }
+
+    var num = cardNumberEl ? cardNumberEl.value.replace(/\s/g, "") : "";
+    if (!/^\d{16}$/.test(num)) {
+      showToast("Card number must be exactly 16 digits");
+      if (cardNumberEl) cardNumberEl.focus();
+      return false;
+    }
+    if (num.charAt(0) !== "4") {
+      showToast("Enter a valid Visa card number (starts with 4)");
+      if (cardNumberEl) cardNumberEl.focus();
+      return false;
+    }
+    if (!isValidLuhn(num)) {
+      showToast("This card number is not valid — check the digits and try again");
+      if (cardNumberEl) cardNumberEl.focus();
+      return false;
+    }
+
+    var expRaw = cardExpiryEl ? cardExpiryEl.value.trim() : "";
+    if (!/^\d{2}\/\d{2}$/.test(expRaw)) {
+      showToast("Enter expiry as MM/YY");
+      if (cardExpiryEl) cardExpiryEl.focus();
+      return false;
+    }
+
+    var month = parseInt(expRaw.slice(0, 2), 10);
+    var year = parseInt(expRaw.slice(3, 5), 10);
+    if (month < 1 || month > 12) {
+      showToast("Month must be between 01 and 12");
+      if (cardExpiryEl) cardExpiryEl.focus();
+      return false;
+    }
+
+    var now = new Date();
+    var currentYY = now.getFullYear() % 100;
+    var currentMM = now.getMonth() + 1;
+    if (year < currentYY || (year === currentYY && month < currentMM)) {
+      showToast("This card appears to be expired");
+      if (cardExpiryEl) cardExpiryEl.focus();
+      return false;
+    }
+
+    var cvv = cardCvvEl ? cardCvvEl.value.trim() : "";
+    if (!/^\d{3}$/.test(cvv)) {
+      showToast("Enter a valid 3-digit CVV");
+      if (cardCvvEl) cardCvvEl.focus();
+      return false;
+    }
+
+    return true;
+  }
+
+  if (cardNumberEl) {
+    cardNumberEl.addEventListener("input", formatCardNumberInput);
+    cardNumberEl.addEventListener("paste", function () {
+      setTimeout(formatCardNumberInput, 0);
+    });
+  }
+  if (cardExpiryEl) {
+    cardExpiryEl.addEventListener("input", formatCardExpiryInput);
+    cardExpiryEl.addEventListener("paste", function () {
+      setTimeout(formatCardExpiryInput, 0);
+    });
+  }
+  if (cardCvvEl) {
+    cardCvvEl.addEventListener("input", formatCardCvvInput);
+    cardCvvEl.addEventListener("paste", function () {
+      setTimeout(formatCardCvvInput, 0);
+    });
+  }
+
+  function updatePaymentMethodUI(method) {
+    var isVisa = method === "visa";
+    var useStripe = isVisa && usesStripeForCards();
+    document.getElementById("card-details").classList.toggle("d-none", !isVisa);
+    document.getElementById("stripe-card-panel").classList.toggle("d-none", !useStripe);
+    document.getElementById("manual-card-fields").classList.toggle("d-none", useStripe);
+    if (useStripe) {
+      initStripeCard();
+      setCardFieldsRequired(false);
+    } else {
+      setCardFieldsRequired(isVisa);
+    }
+    if (!isVisa) {
+      if (cardNumberEl) cardNumberEl.value = "";
+      if (cardExpiryEl) cardExpiryEl.value = "";
+      if (cardCvvEl) cardCvvEl.value = "";
+      var errEl = document.getElementById("card-element-errors");
+      if (errEl) errEl.textContent = "";
+    }
+  }
+
+  document.querySelectorAll('input[name="payment"]').forEach(function (radio) {
+    radio.addEventListener("change", function (e) {
+      updatePaymentMethodUI(e.target.value);
+    });
+  });
+  loadStripePublishableKey().then(function () {
+    var checked = document.querySelector('input[name="payment"]:checked');
+    updatePaymentMethodUI(checked ? checked.value : "cod");
+  });
+
+  async function handleCheckoutSubmit(e) {
+    if (e) e.preventDefault();
+
+    if (!validateDeliveryForm()) return;
+
+    var paymentRadio = document.querySelector('input[name="payment"]:checked');
+    if (!paymentRadio) {
+      showToast("Please choose a payment method");
+      return;
+    }
+    var paymentMethod = paymentRadio.value;
+
+    if (paymentMethod === "visa") {
+      await loadStripePublishableKey();
+      if (!usesStripeForCards()) {
+        showToast(
+          "Card payments are not set up. Add STRIPE_PUBLISHABLE_KEY to the backend .env (pk_test_…), restart the API, or use cash on delivery."
+        );
+        return;
+      }
+      if (!initStripeCard()) {
+        showToast("Card payments could not load — refresh and try again");
+        return;
+      }
+    }
+
+    var cart = [];
+    try {
+      cart = await getCartItems();
+    } catch (err) {
+      showToast((err && err.message) || "Could not load cart");
+      setCheckoutBusy(false);
+      return;
+    }
+
+    if (cart.length === 0) {
+      showToast("Your cart is empty");
+      setCheckoutBusy(false);
+      return;
+    }
+
+    var cityInput = document.getElementById("city").value;
+    showToast("Processing your order…");
+    setCheckoutBusy(true);
+
+    var grandTotalText =
+      document.getElementById("checkout-grand-total").innerText.trim() + " EGP";
+
+    var orderPayload = {
+      items: cart,
+      totalLabel: grandTotalText,
+      shippingFeeEgp: shippingFee,
+      shippingAddress: {
+        city: cityInput,
+        street: document.getElementById("street").value,
+        apartment: document.getElementById("apartment").value,
+        region: document.getElementById("region").value,
+        phone: document.getElementById("phone").value,
+      },
+      paymentMethod: paymentMethod,
+      placedAt: new Date().toISOString(),
+      customerEmail: (currentUser && currentUser.email) || "",
+    };
+
+    var cityLabel = cityInput === "giza" ? "Giza" : "Cairo";
+    var paymentLabel =
+      paymentMethod === "visa" ? "Visa" : "Cash on delivery";
+
+    var orderForThankYouPage = {
+      items: cart,
+      total: grandTotalText,
+      shippingFeeEgp: shippingFee,
+      city: cityLabel,
+      street: orderPayload.shippingAddress.street,
+      apartment: orderPayload.shippingAddress.apartment,
+      region: orderPayload.shippingAddress.region,
+      phone: orderPayload.shippingAddress.phone,
+      payment: paymentLabel,
+      date: new Date().toLocaleString(),
+    };
+
+    try {
+      var orderRes = await placeOrder(orderPayload);
+      var orderId =
+        typeof extractOrderId === "function" ? extractOrderId(orderRes) : "";
+      if (!orderId) {
+        throw new Error("Order was created but no order id was returned");
+      }
+
+      if (paymentMethod === "cod") {
+        try {
+          await createCashPayment(orderId);
+        } catch (cashErr) {}
+      } else {
+        var stripePay = await createStripePayment(orderId);
+        if (!stripePay.clientSecret) {
+          throw new Error("Payment could not be started — check Stripe keys on the server");
+        }
+        var confirmResult = await stripeInstance.confirmCardPayment(
+          stripePay.clientSecret,
+          {
+            payment_method: {
+              card: stripeCardElement,
+              billing_details: {
+                address: { country: "EG" },
+              },
+            },
+          }
+        );
+        if (confirmResult.error) {
+          throw new Error(confirmResult.error.message || "Card payment failed");
+        }
+        var pi = confirmResult.paymentIntent;
+        if (!pi || pi.status !== "succeeded") {
+          throw new Error("Payment was not completed");
+        }
+        await confirmStripePayment(pi.id);
+      }
+
+      saveDeliveryDetails();
+      orderForThankYouPage.orderId = orderId;
+      localStorage.setItem("lastOrder", JSON.stringify(orderForThankYouPage));
+      window.location.href = "thankyou.html";
+    } catch (err) {
+      console.error(err);
+      showToast((err && err.message) || "Could not complete checkout — check API");
+      setCheckoutBusy(false);
+    }
+  }
+
+  if (checkoutFormEl) {
+    checkoutFormEl.addEventListener("submit", handleCheckoutSubmit);
+  }
+  </script>
+  <script src="footer.js"></script>
 </body>
 </html>

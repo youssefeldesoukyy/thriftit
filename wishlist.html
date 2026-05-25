@@ -9,27 +9,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <title>Wishlist — Thrift It</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-     <style>
-    body {
-  margin: 0;
-  min-height: 100vh;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.8),
-    rgba(0, 0, 0, 0.2)
-  );
-}
-    </style>
     <script src="config.js"></script>
+    <script src="products-api.js?v=4"></script>
+    <script src="auth-api.js?v=3"></script>
     <script src="app-api.js"></script>
   </head>
 
 
   
-<body>
+<body class="thriftit-bag-page">
   <div class="toast-container position-fixed top-0 end-0 p-3">
 
-  <div id="liveToast" class="toast align-items-center text-bg-dark border-0">
+  <div id="liveToast" class="toast thriftit-toast align-items-center text-bg-dark border-0">
     <div class="d-flex">
       <div class="toast-body" id="toast-msg"></div>
       <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
@@ -38,7 +29,7 @@
 
 </div>
 
-<nav class="navbar navbar-expand-lg fixed-top navbar-light bg-white border-bottom shadow-sm" style="z-index:9999;">
+<nav class="navbar navbar-expand-lg fixed-top navbar-light thriftit-navbar" style="z-index:9999;">
 
   <div class="container-fluid">
 
@@ -53,9 +44,11 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
 
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="women.html">Woman</a></li>
-        <li class="nav-item"><a class="nav-link" href="men.html">Man</a></li>
-        <li class="nav-item"><a class="nav-link" href="seller.html">Sell Your Item</a></li>
+        <li class="nav-item"><a class="nav-link" href="women.html">Women</a></li>
+        <li class="nav-item"><a class="nav-link" href="men.html">Men</a></li>
+        <li class="nav-item">
+          <a class="nav-link navbar-sell-nav" href="seller.html">Sell your item</a>
+        </li>
       </ul>
 
       <div class="d-flex align-items-center gap-3">
@@ -75,7 +68,7 @@
         </a>
 
         <a href="login.html" id="loginBtn" class="btn btn-outline-dark btn-sm">Login</a>
-        <a href="signup.html" id="signupBtn" class="btn btn-dark btn-sm">Sign Up</a>
+        <a href="signup.html" id="signupBtn" class="btn btn-outline-dark btn-sm">Sign Up</a>
 
         <a href="profile.html" id="username" class="sign-link text-decoration-none align-middle" style="display:none;"></a>
       </div>
@@ -85,109 +78,147 @@
 
 </nav>
 
-<script>
-let currentUser = JSON.parse(localStorage.getItem("currentUser"));
-let loginBtn = document.getElementById("loginBtn");
-let signupBtn = document.getElementById("signupBtn");
-let username = document.getElementById("username");
-
-if (currentUser) {
-  loginBtn.style.display = "none";
-  signupBtn.style.display = "none";
-  username.style.display = "inline-block";
-  username.innerText = "Hi, " + currentUser.name;
-} else {
-  loginBtn.style.display = "inline-block";
-  signupBtn.style.display = "inline-block";
-  username.style.display = "none";
-}
-</script>
 <script src="script/bootstrap.min.js"></script>
 <script src="index.js"></script>
 
-<div class="container mt-5 pt-5">
-  <h2 class="text-white">Your Wishlist</h2>
+<div class="container thriftit-page-section mt-5 pt-5 pb-5">
+  <header class="thriftit-bag-header">
+    <div class="thriftit-bag-header__icon" aria-hidden="true">
+      <i class="fa-solid fa-heart"></i>
+    </div>
+    <h1 class="thriftit-page-heading">Your Wishlist</h1>
+    <p class="thriftit-bag-subtitle">Items you saved for later</p>
+  </header>
 
-  <div class="table-responsive">
-    <table class="table table-dark table-striped mt-3">
-      <thead>
-        <tr>
-          <th>Product</th>
-          <th>Color</th>
-          <th>Size</th>
-          <th>Price</th>
-          <th>Action</th>
-        </tr>
-      </thead>
+  <div class="thriftit-bag-layout" id="wishlist-layout">
+    <div class="thriftit-bag-panel">
+      <div class="thriftit-bag-list" id="wishlist-list" role="list" aria-live="polite"></div>
+    </div>
 
-      <tbody id="wishlist-body"></tbody>
-    </table>
+    <aside class="thriftit-bag-panel thriftit-bag-summary" id="wishlist-summary">
+      <h2 class="thriftit-bag-summary__title">Saved items</h2>
+      <div class="thriftit-bag-summary__row">
+        <span>Total saved</span>
+        <span id="wishlist-count">0</span>
+      </div>
+      <p class="thriftit-bag-summary__note">Add items to your cart, view a product, or remove ones you no longer want.</p>
+      <a href="shopall.html" class="thriftit-bag-btn thriftit-bag-btn--primary thriftit-bag-btn--block">Continue shopping</a>
+      <p class="thriftit-bag-summary__links">
+        <a href="cart.html">View cart</a>
+      </p>
+    </aside>
   </div>
-
-  <p class="text-light text-end mt-3 mb-0">
-    <a href="shopall.html" class="text-white">Continue shopping</a>
-  </p>
 </div>
 
 <script>
-if (!currentUser) {
-  showToast("Please login first");
+if (!isLoggedIn()) {
   window.location.href = "login.html";
 }
 
-async function loadWishlist() {
-  const tbody = document.getElementById("wishlist-body");
-  tbody.innerHTML =
-    '<tr><td colspan="5" class="text-center py-3 text-muted">Loading wishlist…</td></tr>';
+function renderBagItem(item, actionsHtml) {
+  var price = parseFloat(item.price) || 0;
+  var pid = encodeURIComponent(item.id || "");
+  var img = escapeAttr(item.image || "");
+  var name = escapeHtml(item.name || "Item");
+  return (
+    '<article class="thriftit-bag-item" role="listitem">' +
+    '<a href="product.html?id=' + pid + '" class="thriftit-bag-item__thumb">' +
+    '<img src="' + img + '" alt="" loading="lazy" width="96" height="96">' +
+    "</a>" +
+    '<div class="thriftit-bag-item__body">' +
+    '<h2 class="thriftit-bag-item__title"><a href="product.html?id=' + pid + '">' + name + "</a></h2>" +
+    '<ul class="thriftit-bag-item__meta">' +
+    "<li><span>Color</span> " + escapeHtml(item.color || "—") + "</li>" +
+    "<li><span>Size</span> " + escapeHtml(item.size || "—") + "</li>" +
+    "</ul>" +
+    '<p class="thriftit-bag-item__price">' + price + " EGP</p>" +
+    "</div>" +
+    '<div class="thriftit-bag-item__actions">' + actionsHtml + "</div>" +
+    "</article>"
+  );
+}
 
-  let rows = [];
+async function loadWishlist() {
+  var listEl = document.getElementById("wishlist-list");
+  var wishlistCount = document.getElementById("wishlist-count");
+  var wishlistSummary = document.getElementById("wishlist-summary");
+  var wishlistLayout = document.getElementById("wishlist-layout");
+
+  listEl.innerHTML =
+    '<div class="thriftit-bag-loading"><i class="fa-solid fa-spinner fa-spin"></i><p>Loading your wishlist…</p></div>';
+
+  var rows = [];
   try {
     rows = await getWishlistItems();
   } catch (err) {
     console.error(err);
-    tbody.innerHTML =
-      '<tr><td colspan="5" class="text-center py-5 text-danger">Could not load wishlist. Log in and ensure the API is running.</td></tr>';
+    listEl.innerHTML =
+      '<div class="thriftit-bag-error"><p>Could not load your wishlist. Log in and ensure the API is running.</p></div>';
+    wishlistCount.innerText = "0";
     return;
   }
 
-  tbody.innerHTML = "";
+  listEl.innerHTML = "";
 
   if (rows.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="5" class="text-center py-5 text-muted">
-          Your wishlist is empty — save items you love with the heart on a product page.
-        </td>
-      </tr>
-    `;
+    wishlistLayout.classList.add("thriftit-bag-layout--single");
+    if (wishlistSummary) wishlistSummary.style.display = "none";
+    listEl.innerHTML =
+      '<div class="thriftit-bag-empty">' +
+      '<i class="fa-solid fa-heart" aria-hidden="true"></i>' +
+      "<p>Your wishlist is empty — tap the heart on any product to save it here.</p>" +
+      '<a href="shopall.html" class="thriftit-bag-btn thriftit-bag-btn--primary">Browse shop</a>' +
+      "</div>";
+    wishlistCount.innerText = "0";
     return;
   }
 
-  rows.forEach((item) => {
-    const price = parseFloat(item.price) || 0;
-    const safeLine = String(item._lineId || "").replace(/"/g, "&quot;");
-    const safePid = String(item.id || "").replace(/"/g, "&quot;");
-    const img = (item.image || "").replace(/"/g, "&quot;");
-    const name = String(item.name || "Item").replace(/</g, "&lt;");
-    tbody.innerHTML += `
-      <tr>
-        <td>
-          <a href="product.html?id=${encodeURIComponent(item.id)}" class="text-white text-decoration-none">
-            <img src="${img}" width="60" class="me-2 rounded" alt="">${name}
-          </a>
-        </td>
-        <td>${item.color || "-"}</td>
-        <td>${item.size || "-"}</td>
-        <td>${price} EGP</td>
-        <td>
-          <button type="button" class="btn btn-danger btn-sm mb-1" data-line-id="${safeLine}" data-product-id="${safePid}">Remove</button>
-          <a class="btn btn-outline-light btn-sm mb-1" href="product.html?id=${encodeURIComponent(item.id)}">View</a>
-        </td>
-      </tr>
-    `;
+  wishlistLayout.classList.remove("thriftit-bag-layout--single");
+  if (wishlistSummary) wishlistSummary.style.display = "";
+  wishlistCount.innerText = String(rows.length);
+
+  rows.forEach(function (item) {
+    var safeLine = escapeAttr(item._lineId || "");
+    var safePid = escapeAttr(item.id || "");
+    var pidEnc = encodeURIComponent(item.id || "");
+    var actions =
+      '<button type="button" class="thriftit-bag-btn thriftit-bag-btn--primary add-wishlist-cart" data-line-id="' +
+      safeLine +
+      '" data-product-id="' +
+      safePid +
+      '"><i class="fa-solid fa-cart-shopping" aria-hidden="true"></i> Add to cart</button>' +
+      '<a class="thriftit-bag-btn thriftit-bag-btn--ghost" href="product.html?id=' +
+      pidEnc +
+      '"><i class="fa-solid fa-eye" aria-hidden="true"></i> View</a>' +
+      '<button type="button" class="thriftit-bag-btn thriftit-bag-btn--danger" data-line-id="' +
+      safeLine +
+      '" data-product-id="' +
+      safePid +
+      '"><i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove</button>';
+    listEl.innerHTML += renderBagItem(item, actions);
   });
 
-  tbody.querySelectorAll(".btn-danger[data-product-id]").forEach(function (btn) {
+  listEl.querySelectorAll(".add-wishlist-cart").forEach(function (btn) {
+    btn.addEventListener("click", async function () {
+      var pid = btn.getAttribute("data-product-id");
+      var lineId = btn.getAttribute("data-line-id");
+      if (!pid) return;
+      btn.disabled = true;
+      try {
+        await addProductToCart({ id: pid }).catch(function (addErr) {
+          if (!/already in cart/i.test((addErr && addErr.message) || "")) throw addErr;
+        });
+        await removeWishlistLine(lineId, pid);
+        await loadWishlist();
+        showToast("Added to cart");
+      } catch (e) {
+        showToast((e && e.message) || "Could not add to cart");
+        btn.disabled = false;
+      }
+    });
+  });
+
+  listEl.querySelectorAll("[data-product-id].thriftit-bag-btn--danger").forEach(function (btn) {
     btn.addEventListener("click", async function () {
       try {
         await removeWishlistLine(
@@ -203,66 +234,8 @@ async function loadWishlist() {
   });
 }
 
-function showToast(message) {
-  const toastEl = document.getElementById("liveToast");
-  const toastMsg = document.getElementById("toast-msg");
-  toastMsg.innerText = message;
-  const toast = new bootstrap.Toast(toastEl);
-  toast.show();
-}
-
 loadWishlist();
 </script>
-
-<footer class="text-white mt-5 pt-5 pb-4" style="background: rgba(0,0,0,0.9);">
-
-  <div class="container">
-    <div class="row">
-
-      <div class="col-md-4 mb-3">
-        <h4 class="fw-bold">Thrift It</h4>
-
-        <p class="text-light">
-          Buy and sell second-hand fashion safely, easily, and affordably.
-        </p>
-
-        <div class="d-flex gap-3 mt-3">
-          <a href="#" class="text-light fs-5"><i class="fa-brands fa-facebook"></i></a>
-          <a href="#" class="text-light fs-5"><i class="fa-brands fa-instagram"></i></a>
-          <a href="#" class="text-light fs-5"><i class="fa-brands fa-tiktok"></i></a>
-        </div>
-      </div>
-
-      <div class="col-md-4 mb-3">
-        <h5 class="fw-bold">Payment & Delivery</h5>
-
-        <ul class="list-unstyled text-light">
-          <li>✔ Cash on Delivery & Visa payments available</li>
-          <li>✔ You can inspect the item with the courier (5–10 minutes)</li>
-          <li>✔ Delivery available in Cairo & Giza only</li>
-        </ul>
-      </div>
-
-      <div class="col-md-4 mb-3">
-        <h5 class="fw-bold">Quick Links</h5>
-
-        <ul class="list-unstyled">
-          <li><a href="index.html" class="text-light text-decoration-none">Home</a></li>
-          <li><a href="women.html" class="text-light text-decoration-none">Woman</a></li>
-          <li><a href="men.html" class="text-light text-decoration-none">Man</a></li>
-        </ul>
-      </div>
-
-    </div>
-
-    <hr class="border-light">
-
-    <div class="text-center text-light">
-      <small>© 2026 Thrift It. All rights reserved.</small>
-    </div>
-
-  </div>
-
-</footer>
+  <script src="footer.js"></script>
 </body>
 </html>
