@@ -1090,6 +1090,26 @@ body.thriftit-seller-page {
   color: rgba(21, 40, 32, 0.5);
 }
 
+.seller-photo-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  margin: 0.65rem 0 0;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: rgba(21, 40, 32, 0.62);
+  background: rgba(72, 152, 93, 0.08);
+  border-radius: 0.65rem;
+  border: 1px solid rgba(72, 152, 93, 0.18);
+}
+
+.seller-photo-note i {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  color: var(--thriftit-brand-green);
+}
+
 .seller-photo-preview {
   margin-top: 0.85rem;
   border-radius: 1rem;
@@ -1515,6 +1535,26 @@ body.thriftit-product-page {
   background: transparent !important;
 }
 
+.product-own-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 0.75rem;
+  background: rgba(72, 152, 93, 0.12);
+  border: 1px solid rgba(72, 152, 93, 0.35);
+  color: var(--thriftit-home-green-deep);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.product-own-banner i {
+  margin-top: 0.15rem;
+  color: var(--thriftit-brand-green);
+}
+
 @media (max-width: 575px) {
   .product-details__row {
     grid-template-columns: 1fr;
@@ -1657,6 +1697,56 @@ body.thriftit-product-page {
   text-align: center;
   text-decoration: none;
   display: inline-block;
+}
+
+.shop-card--own .shop-card__body {
+  border-top: 3px solid var(--thriftit-brand-green);
+}
+
+.shop-card__own-badge {
+  position: absolute;
+  top: 0.65rem;
+  left: 0.65rem;
+  z-index: 2;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: var(--thriftit-brand-green);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.shop-card__own-note {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--thriftit-home-green-deep);
+}
+
+.shop-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.shop-card__actions .shop-card__cta {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: center;
+}
+
+.shop-card__cta--secondary {
+  background: rgba(21, 40, 32, 0.08) !important;
+  color: var(--thriftit-home-green-deep) !important;
+  box-shadow: none !important;
+}
+
+.seller-photo-zone--disabled {
+  pointer-events: none;
+  opacity: 0.55;
 }
 
 .shop-card__cta:hover,
@@ -2529,10 +2619,19 @@ header.thriftit-admin-topbar {
   white-space: nowrap;
 }
 
-.thriftit-order-status--delivered,
-.thriftit-order-status--confirmed {
+.thriftit-order-status--delivered {
   background: rgba(76, 140, 106, 0.15);
   color: #3d7a52;
+}
+
+.thriftit-order-status--confirmed {
+  background: rgba(201, 162, 39, 0.15);
+  color: #7a5f12;
+}
+
+.thriftit-order-status--shipped {
+  background: rgba(59, 130, 246, 0.12);
+  color: #1d4ed8;
 }
 
 .thriftit-order-status--pending {
@@ -2926,6 +3025,16 @@ body.thriftit-admin-page {
 
 .thriftit-admin-tabs__btn.is-active .thriftit-admin-tabs__count {
   background: rgba(255, 255, 255, 0.25);
+}
+
+.navbar-admin-nav {
+  font-weight: 600;
+  color: var(--thriftit-home-green-deep) !important;
+}
+
+.navbar-admin-nav:hover,
+.navbar-admin-nav.active {
+  color: var(--thriftit-brand-green) !important;
 }
 
 .thriftit-admin-panel {

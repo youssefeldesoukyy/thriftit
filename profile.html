@@ -10,8 +10,8 @@
     <title>Your profile — Thrift It</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <script src="config.js"></script>
-    <script src="auth-api.js?v=3"></script>
-    <script src="app-api.js?v=10"></script>
+    <script src="auth-api.js?v=6"></script>
+    <script src="app-api.js?v=11"></script>
   </head>
 
 <body class="thriftit-bag-page">
@@ -115,7 +115,7 @@
       <div id="leave-review" class="thriftit-profile-orders-block mt-4 pt-4 border-top">
       <h2 class="thriftit-checkout-section-title">Rate your seller</h2>
       <p class="thriftit-profile-reviews-hint">
-        After you receive an item, leave a rating and comment for the seller.
+        You can leave a review only after your order has been marked as received by our team.
       </p>
 
       <div id="reviewable-loading" class="thriftit-bag-loading">
@@ -124,7 +124,7 @@
       </div>
       <div id="reviewable-empty" class="thriftit-bag-empty d-none">
         <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
-        <p>No shipped orders ready for a review yet</p>
+        <p>No received orders ready for a review yet</p>
       </div>
       <div id="reviewable-list" class="thriftit-reviewable-list d-none"></div>
 
@@ -201,7 +201,7 @@ if (!isLoggedIn()) {
       pending: "Pending",
       confirmed: "Confirmed",
       shipped: "Shipped",
-      delivered: "Delivered",
+      delivered: "Received",
       cancelled: "Cancelled",
     };
     return labels[s] || s.charAt(0).toUpperCase() + s.slice(1);

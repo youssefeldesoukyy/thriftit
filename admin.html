@@ -9,10 +9,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
   <link rel="stylesheet" href="style.css">
   <script src="config.js"></script>
-  <script src="auth-api.js?v=4"></script>
-  <script src="products-api.js?v=7"></script>
+  <script src="auth-api.js?v=6"></script>
+  <script src="products-api.js?v=8"></script>
   <script src="gallery-nav.js?v=3"></script>
-  <script src="app-api.js?v=8"></script>
+  <script src="app-api.js?v=11"></script>
 </head>
 <body class="thriftit-admin-page">
 
@@ -49,15 +49,26 @@
 
   <div id="admin-app" class="d-none">
     <div class="thriftit-admin-hero">
-      <h1 class="thriftit-admin-hero__title">Seller listings</h1>
+      <h1 class="thriftit-admin-hero__title">Admin dashboard</h1>
       <p class="thriftit-admin-hero__sub">
-        Approve or reject items sellers want to list on the shop. Buying and checkout do not need admin approval.
+        Approve seller listings and manage customer orders — mark orders as shipped, then received when they arrive.
       </p>
     </div>
 
-    <section class="thriftit-admin-panel">
+    <div class="thriftit-admin-tabs" role="tablist" aria-label="Admin sections">
+      <button type="button" class="thriftit-admin-tabs__btn is-active" id="admin-tab-listings" role="tab" aria-selected="true" aria-controls="admin-panel-listings" data-admin-tab="listings">
+        Pending listings
+        <span class="thriftit-admin-tabs__count" id="pending-products-count">0</span>
+      </button>
+      <button type="button" class="thriftit-admin-tabs__btn" id="admin-tab-orders" role="tab" aria-selected="false" aria-controls="admin-panel-orders" data-admin-tab="orders">
+        Customer orders
+        <span class="thriftit-admin-tabs__count" id="admin-orders-count">0</span>
+      </button>
+    </div>
+
+    <section id="admin-panel-listings" class="thriftit-admin-panel admin-tab-panel" role="tabpanel" aria-labelledby="admin-tab-listings">
       <div class="thriftit-admin-panel__head">
-        <h2>Pending listings <span class="thriftit-admin-tabs__count" id="pending-products-count">0</span></h2>
+        <h2>Pending listings</h2>
         <button type="button" class="btn btn-sm btn-outline-dark" id="refreshListingsBtn">
           <i class="fa-solid fa-rotate" aria-hidden="true"></i> Refresh
         </button>
@@ -67,6 +78,20 @@
         <p>Loading listings…</p>
       </div>
       <div id="pendingProducts" class="row g-4"></div>
+    </section>
+
+    <section id="admin-panel-orders" class="thriftit-admin-panel admin-tab-panel d-none" role="tabpanel" aria-labelledby="admin-tab-orders" hidden>
+      <div class="thriftit-admin-panel__head">
+        <h2>Customer orders</h2>
+        <button type="button" class="btn btn-sm btn-outline-dark" id="refreshOrdersBtn">
+          <i class="fa-solid fa-rotate" aria-hidden="true"></i> Refresh
+        </button>
+      </div>
+      <div id="admin-orders-loading" class="thriftit-bag-loading">
+        <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+        <p>Loading orders…</p>
+      </div>
+      <div id="adminOrdersList" class="thriftit-admin-orders"></div>
     </section>
   </div>
 </main>
@@ -274,6 +299,11 @@ var adminOk =
     ? isAdminUser(currentUser)
     : currentUser && String(currentUser.role || "").toUpperCase() === "ADMIN";
 
+document.getElementById("adminLogoutBtn").addEventListener("click", function () {
+  if (typeof authLogout === "function") authLogout();
+  window.location.href = "login.html";
+});
+
 if (!isLoggedIn() || !adminOk) {
   document.getElementById("admin-denied").classList.remove("d-none");
   var deniedMsg = document.getElementById("admin-denied-msg");
@@ -288,10 +318,47 @@ if (!isLoggedIn() || !adminOk) {
   document.getElementById("admin-user-label").textContent =
     "Hi, " + (typeof userDisplayName === "function" ? userDisplayName(currentUser) : "Admin");
 
-  document.getElementById("adminLogoutBtn").addEventListener("click", function () {
-    if (typeof authLogout === "function") authLogout();
-    else window.location.href = "login.html";
-  });
+  var adminTabListings = document.getElementById("admin-tab-listings");
+  var adminTabOrders = document.getElementById("admin-tab-orders");
+  var adminPanelListings = document.getElementById("admin-panel-listings");
+  var adminPanelOrders = document.getElementById("admin-panel-orders");
+
+  function switchAdminTab(tab) {
+    var showListings = tab === "listings";
+    if (adminTabListings) {
+      adminTabListings.classList.toggle("is-active", showListings);
+      adminTabListings.setAttribute("aria-selected", showListings ? "true" : "false");
+    }
+    if (adminTabOrders) {
+      adminTabOrders.classList.toggle("is-active", !showListings);
+      adminTabOrders.setAttribute("aria-selected", showListings ? "false" : "true");
+    }
+    if (adminPanelListings) {
+      adminPanelListings.classList.toggle("d-none", !showListings);
+      adminPanelListings.hidden = !showListings;
+    }
+    if (adminPanelOrders) {
+      adminPanelOrders.classList.toggle("d-none", showListings);
+      adminPanelOrders.hidden = showListings;
+    }
+    try {
+      history.replaceState(null, "", showListings ? "#listings" : "#orders");
+    } catch (_) {}
+  }
+
+  if (adminTabListings) {
+    adminTabListings.addEventListener("click", function () {
+      switchAdminTab("listings");
+    });
+  }
+  if (adminTabOrders) {
+    adminTabOrders.addEventListener("click", function () {
+      switchAdminTab("orders");
+    });
+  }
+  if (window.location.hash === "#orders") {
+    switchAdminTab("orders");
+  }
 
   document.getElementById("adminProductModal").addEventListener("hidden.bs.modal", function () {
     closeAdminImageLightbox();
@@ -455,6 +522,176 @@ if (!isLoggedIn() || !adminOk) {
 
   document.getElementById("refreshListingsBtn").addEventListener("click", loadPendingProducts);
   loadPendingProducts();
+
+  var ordersContainer = document.getElementById("adminOrdersList");
+  var ordersLoadingEl = document.getElementById("admin-orders-loading");
+  var refreshOrdersBtn = document.getElementById("refreshOrdersBtn");
+
+  if (!ordersContainer || !ordersLoadingEl || !refreshOrdersBtn) {
+    console.error("Admin orders UI elements missing from admin.html");
+  }
+
+  function formatAdminOrderStatus(status) {
+    var s = String(status || "pending").toLowerCase();
+    var labels = {
+      pending: "Pending",
+      confirmed: "Confirmed",
+      shipped: "Shipped",
+      delivered: "Received",
+      cancelled: "Cancelled",
+    };
+    return labels[s] || s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  function orderShortId(id) {
+    var s = String(id || "");
+    return s.length >= 6 ? s.slice(-6).toUpperCase() : s.toUpperCase();
+  }
+
+  function formatAdminOrderDate(at) {
+    if (!at) return "";
+    try {
+      return new Date(at).toLocaleString();
+    } catch (_) {
+      return "";
+    }
+  }
+
+  async function setOrderStatus(orderId, status, okMsg) {
+    await updateOrderStatusAdmin(orderId, status);
+    showToast(okMsg);
+    await loadAdminOrders();
+  }
+
+  async function loadAdminOrders() {
+    if (!ordersContainer || !ordersLoadingEl) return;
+    ordersLoadingEl.classList.remove("d-none");
+    ordersContainer.innerHTML = "";
+    try {
+      var orders =
+        typeof getAllOrdersAdmin === "function" ? await getAllOrdersAdmin() : [];
+      ordersLoadingEl.classList.add("d-none");
+      document.getElementById("admin-orders-count").textContent = String(orders.length);
+
+      if (!orders.length) {
+        ordersContainer.innerHTML =
+          '<p class="text-muted mb-0">No customer orders yet — new checkouts will appear here as confirmed.</p>';
+        return;
+      }
+
+      orders.forEach(function (order) {
+        var card = document.createElement("article");
+        card.className = "thriftit-admin-order-card";
+        var status = String(order.status || "pending").toLowerCase();
+        var itemsHtml = (order.items || [])
+          .map(function (item) {
+            return (
+              "<li>" +
+              escapeHtml(item.name) +
+              " · " +
+              escapeHtml(String(item.price * (item.quantity || 1))) +
+              " EGP</li>"
+            );
+          })
+          .join("");
+
+        var actions = "";
+        if (status === "pending") {
+          actions +=
+            '<button type="button" class="thriftit-bag-btn thriftit-bag-btn--primary btn-sm admin-order-confirm">Confirm order</button>';
+        }
+        if (status === "confirmed") {
+          actions +=
+            '<button type="button" class="thriftit-bag-btn thriftit-bag-btn--primary btn-sm admin-order-ship">Mark as shipped</button>';
+        }
+        if (status === "shipped") {
+          actions +=
+            '<button type="button" class="thriftit-bag-btn thriftit-bag-btn--primary btn-sm admin-order-received">Mark as received</button>';
+        }
+
+        card.innerHTML =
+          '<div class="thriftit-admin-order-card__head">' +
+          "<div>" +
+          '<p class="thriftit-admin-order-card__id">Order #' +
+          escapeHtml(orderShortId(order.id)) +
+          "</p>" +
+          '<p class="thriftit-admin-order-card__meta">' +
+          escapeHtml(order.buyerName || "Buyer") +
+          (order.buyerEmail ? " · " + escapeHtml(order.buyerEmail) : "") +
+          (order.createdAt
+            ? " · " + escapeHtml(formatAdminOrderDate(order.createdAt))
+            : "") +
+          "</p></div>" +
+          '<span class="thriftit-order-status thriftit-order-status--' +
+          escapeHtml(status) +
+          '">' +
+          escapeHtml(formatAdminOrderStatus(status)) +
+          "</span></div>" +
+          '<ul class="thriftit-admin-order-card__items">' +
+          itemsHtml +
+          "</ul>" +
+          (order.address
+            ? '<p class="thriftit-admin-order-card__address"><span>Deliver to</span> ' +
+              escapeHtml(order.address) +
+              "</p>"
+            : "") +
+          '<p class="thriftit-admin-order-card__total"><span>Total</span> <strong>' +
+          escapeHtml(String(order.amount)) +
+          " EGP</strong></p>" +
+          (actions
+            ? '<div class="thriftit-admin-order-card__actions">' + actions + "</div>"
+            : "");
+
+        var confirmBtn = card.querySelector(".admin-order-confirm");
+        if (confirmBtn) {
+          confirmBtn.addEventListener("click", async function () {
+            try {
+              await approveOrderAdmin(order.id);
+              showToast("Order confirmed");
+              await loadAdminOrders();
+            } catch (err) {
+              showToast((err && err.message) || "Could not confirm order");
+            }
+          });
+        }
+
+        var shipBtn = card.querySelector(".admin-order-ship");
+        if (shipBtn) {
+          shipBtn.addEventListener("click", async function () {
+            try {
+              await setOrderStatus(order.id, "shipped", "Order marked as shipped");
+            } catch (err) {
+              showToast((err && err.message) || "Could not update order");
+            }
+          });
+        }
+
+        var receivedBtn = card.querySelector(".admin-order-received");
+        if (receivedBtn) {
+          receivedBtn.addEventListener("click", async function () {
+            try {
+              await setOrderStatus(order.id, "delivered", "Order marked as received");
+            } catch (err) {
+              showToast((err && err.message) || "Could not update order");
+            }
+          });
+        }
+
+        ordersContainer.appendChild(card);
+      });
+    } catch (e) {
+      console.error(e);
+      ordersLoadingEl.classList.add("d-none");
+      ordersContainer.innerHTML =
+        '<p class="text-danger mb-0">Could not load orders. Is the backend running?</p>';
+      showToast((e && e.message) || "Could not load orders");
+    }
+  }
+
+  if (refreshOrdersBtn) {
+    refreshOrdersBtn.addEventListener("click", loadAdminOrders);
+    loadAdminOrders();
+  }
 }
 </script>
 <script src="footer.js"></script>

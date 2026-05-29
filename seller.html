@@ -9,8 +9,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <script src="config.js?v=4002"></script>
-  <script src="auth-api.js?v=3"></script>
+  <script src="auth-api.js?v=6"></script>
   <script src="app-api.js?v=4"></script>
+  <script src="products-api.js?v=8"></script>
 </head>
 <body class="thriftit-seller-page">
 
@@ -62,8 +63,8 @@
 
   <main class="seller-main">
     <div class="seller-card">
-      <h1 class="seller-card__heading">Sell Your Item</h1>
-      <p class="seller-card__sub">List a piece for others to discover. Your listing goes live after review.</p>
+      <h1 class="seller-card__heading" id="seller-page-heading">Sell Your Item</h1>
+      <p class="seller-card__sub" id="seller-page-sub">List a piece for others to discover. Your listing goes live after review.</p>
 
       <form id="sellerForm" novalidate>
         <p class="seller-section-title">Photo</p>
@@ -72,8 +73,12 @@
             <input type="file" id="productImage" accept="image/*" multiple required>
             <span class="seller-photo-zone__icon" aria-hidden="true"><i class="fa-solid fa-cloud-arrow-up"></i></span>
             <span class="seller-photo-zone__title">Choose your files</span>
-            <span class="seller-photo-zone__hint">At least 2 JPG or PNG photos</span>
+            <span class="seller-photo-zone__hint">At least 4 JPG or PNG photos</span>
           </label>
+          <p class="seller-photo-note">
+            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+            Please make sure to clearly show and mention any flaws, damages, or signs of wear in the product photos and description.
+          </p>
           <div id="photoPreview" class="seller-photo-preview d-none" aria-live="polite"></div>
         </div>
 
@@ -181,7 +186,7 @@
     </div>
   </main>
 
-  <script src="seller-sizes.js?v=1"></script>
+  <script src="seller-sizes.js?v=2"></script>
   <script src="script/bootstrap.min.js"></script>
   <script src="index.js"></script>
   <script>
@@ -277,7 +282,127 @@
         });
     }
 
-    var SELLER_MIN_PHOTOS = 2;
+    var editProductId = new URLSearchParams(window.location.search).get("edit");
+    var sellerEditMode = !!(editProductId && String(editProductId).trim());
+    var SELLER_MIN_PHOTOS = sellerEditMode ? 0 : 4;
+
+    if (sellerEditMode) {
+      var photoInput = document.getElementById("productImage");
+      if (photoInput) photoInput.removeAttribute("required");
+      var photoZone = document.getElementById("photoZone");
+      if (photoZone) photoZone.classList.add("seller-photo-zone--disabled");
+      var editPhotoNote = document.createElement("p");
+      editPhotoNote.className = "seller-photo-note";
+      editPhotoNote.innerHTML =
+        '<i class="fa-solid fa-circle-info" aria-hidden="true"></i> Photos stay as listed when you edit. Only details below can be changed.';
+      var photoField = document.querySelector(".seller-photo-field");
+      if (photoField) photoField.appendChild(editPhotoNote);
+      document.getElementById("seller-page-heading").textContent = "Edit your listing";
+      document.getElementById("seller-page-sub").textContent =
+        "Update your item details. Changes apply after you save.";
+      var submitBtn = document.querySelector("#sellerForm button[type=submit]");
+      if (submitBtn) submitBtn.textContent = "Save changes";
+    }
+
+    function sellerCategorySlugFromProduct(p) {
+      var raw = String(p.subcategory || p.category || "")
+        .toLowerCase()
+        .replace(/[\s_-]+/g, "");
+      if (raw === "pants" || raw === "bottoms") return "bottoms";
+      if (raw === "tshirts" || raw === "tshirt") return "tshirts";
+      if (raw === "sweatshirts" || raw === "sweatshirt") return "sweatshirts";
+      return raw;
+    }
+
+    function sellerSizeValueFromProduct(p) {
+      if (!p) return "";
+      if (p.sizeCode && String(p.sizeCode).trim() && p.sizeCode !== "—") {
+        return String(p.sizeCode).trim();
+      }
+      return p.size != null ? String(p.size).trim() : "";
+    }
+
+    function sellerDescriptionFromForm() {
+      var desc = document.getElementById("productDescription").value.trim();
+      var name = document.getElementById("productName").value.trim();
+      return desc || name;
+    }
+
+    function populateSellerFormFromProduct(p) {
+      var fullDesc = String(p.description || p.name || "").trim();
+      document.getElementById("productName").value =
+        p.name && String(p.name).trim() !== fullDesc
+          ? String(p.name).trim()
+          : fullDesc.slice(0, 80);
+      document.getElementById("productBrand").value = p.brand || "";
+      document.getElementById("productDescription").value = fullDesc;
+      document.getElementById("productMaterial").value = p.material || "";
+      document.getElementById("productColor").value =
+        p.color && p.color !== "-" ? p.color : "";
+      document.getElementById("productPrice").value =
+        p.price != null ? String(p.price) : "";
+
+      var g = String(p.gender || "").toLowerCase();
+      document.getElementById("productGender").value =
+        g === "female" || g === "women"
+          ? "female"
+          : g === "male" || g === "men"
+            ? "male"
+            : "";
+
+      var cond = String(p.condition || "").toLowerCase();
+      document.getElementById("productCondition").value =
+        cond === "new" ? "new" : cond === "used" ? "used" : "";
+
+      var catSlug = sellerCategorySlugFromProduct(p);
+      var catSel = document.getElementById("productCategory");
+      if (catSlug && catSel) {
+        var found = false;
+        for (var i = 0; i < catSel.options.length; i++) {
+          if (catSel.options[i].value === catSlug) {
+            catSel.value = catSlug;
+            found = true;
+            break;
+          }
+        }
+        if (!found && catSlug) {
+          var opt = document.createElement("option");
+          opt.value = catSlug;
+          opt.textContent = catSlug;
+          catSel.appendChild(opt);
+          catSel.value = catSlug;
+        }
+      }
+      if (typeof updateSellerSizeOptions === "function") {
+        updateSellerSizeOptions(sellerSizeValueFromProduct(p));
+      }
+    }
+
+    if (sellerEditMode) {
+      (async function loadListingForEdit() {
+        if (!isLoggedIn()) {
+          window.location.href = "login.html";
+          return;
+        }
+        try {
+          var listing = await fetchProductById(editProductId);
+          if (!listing) {
+            showToast("Listing not found");
+            return;
+          }
+          if (typeof isOwnProduct !== "function" || !isOwnProduct(listing)) {
+            showToast("You can only edit your own listings");
+            window.location.href =
+              "product.html?id=" + encodeURIComponent(editProductId);
+            return;
+          }
+          populateSellerFormFromProduct(listing);
+        } catch (err) {
+          console.error(err);
+          showToast((err && err.message) || "Could not load listing");
+        }
+      })();
+    }
 
     (function initPhotoPreview() {
       var input = document.getElementById("productImage");
@@ -341,6 +466,64 @@
       if (!isLoggedIn()) {
         showToast("Please log in first");
         window.location.href = "login.html";
+        return;
+      }
+
+      if (sellerEditMode) {
+        (async function saveListingEdit() {
+          var patchPayload = {
+            description: sellerDescriptionFromForm(),
+            brand: document.getElementById("productBrand").value.trim(),
+            material: document.getElementById("productMaterial").value.trim(),
+            color: document.getElementById("productColor").value.trim(),
+            price: document.getElementById("productPrice").value,
+            condition: document.getElementById("productCondition").value.trim(),
+          };
+          var editCatSlug = document
+            .getElementById("productCategory")
+            .value.trim()
+            .toLowerCase();
+          var editGender = document.getElementById("productGender").value.trim();
+          var SELLER_TO_API_CATEGORY_EDIT = { bottoms: "pants" };
+          var editApiCat =
+            SELLER_TO_API_CATEGORY_EDIT[editCatSlug] || editCatSlug;
+          patchPayload.parentRoot =
+            editGender === "female" ? "Women" : "Men";
+          patchPayload.subcategoryName = editApiCat;
+          patchPayload.productCategory = editApiCat;
+          patchPayload.gender =
+            editGender === "female"
+              ? "Female"
+              : editGender === "male"
+                ? "Male"
+                : editGender;
+          var editSizeRaw = document.getElementById("productSize").value.trim();
+          var editSizeOut = editSizeRaw;
+          if (/^\d+$/.test(editSizeRaw)) {
+            editSizeOut = String(parseInt(editSizeRaw, 10));
+          } else {
+            editSizeOut = editSizeRaw.toLowerCase().replace(/\s+/g, "");
+          }
+          patchPayload.size = editSizeOut;
+          if (
+            typeof API_CATEGORY_IDS !== "undefined" &&
+            API_CATEGORY_IDS &&
+            API_CATEGORY_IDS[editApiCat]
+          ) {
+            patchPayload.categoryId = String(API_CATEGORY_IDS[editApiCat]);
+          }
+          try {
+            await updateProductListing(editProductId, patchPayload);
+            showToast("Listing updated");
+            setTimeout(function () {
+              window.location.href =
+                "product.html?id=" + encodeURIComponent(editProductId);
+            }, 400);
+          } catch (err) {
+            console.error(err);
+            showToast((err && err.message) || "Could not save changes");
+          }
+        })();
         return;
       }
 

@@ -10,8 +10,8 @@
     <title>Product — Thrift It</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <script src="config.js"></script>
-    <script src="auth-api.js?v=3"></script>
-    <script src="products-api.js?v=7"></script>
+    <script src="auth-api.js?v=6"></script>
+    <script src="products-api.js?v=8"></script>
     <script src="gallery-nav.js?v=3"></script>
     <script src="app-api.js"></script>
   </head>
@@ -128,7 +128,12 @@
         </div>
       </dl>
 
-      <div class="product-actions">
+      <div id="product-own-banner" class="product-own-banner d-none" role="status">
+        <i class="fa-solid fa-circle-user" aria-hidden="true"></i>
+        <span>This is your product — you cannot buy or wishlist your own listing.</span>
+      </div>
+
+      <div class="product-actions" id="product-buy-actions">
         <button type="button" id="add-to-cart" class="btn product-actions__primary">
           <i class="fa-solid fa-cart-shopping me-2" aria-hidden="true"></i>Add to cart
         </button>
@@ -138,6 +143,12 @@
         <button type="button" id="add-to-wishlist" class="btn product-actions__outline">
           <i class="fa-solid fa-heart me-2" aria-hidden="true"></i>Wishlist
         </button>
+      </div>
+
+      <div class="product-actions product-actions--own d-none" id="product-own-actions">
+        <a id="edit-listing-link" href="seller.html" class="btn product-actions__primary text-decoration-none text-center">
+          <i class="fa-solid fa-pen-to-square me-2" aria-hidden="true"></i>Edit listing
+        </a>
       </div>
 
       <section id="product-seller-reviews" class="product-seller-reviews d-none" aria-labelledby="product-seller-reviews-title">
@@ -317,11 +328,32 @@ let product = null;
     var galleryEl = document.querySelector(".product-gallery");
     if (galleryEl) galleryEl.classList.add("product-gallery--has-image");
 
+    var isOwn =
+      typeof isOwnProduct === "function" && isOwnProduct(product);
+    var ownBanner = document.getElementById("product-own-banner");
+    var buyActions = document.getElementById("product-buy-actions");
+    var ownActions = document.getElementById("product-own-actions");
+    var editLink = document.getElementById("edit-listing-link");
+
+    if (isOwn) {
+      if (ownBanner) ownBanner.classList.remove("d-none");
+      if (buyActions) buyActions.classList.add("d-none");
+      if (ownActions) ownActions.classList.remove("d-none");
+      if (editLink && product.id) {
+        editLink.href =
+          "seller.html?edit=" + encodeURIComponent(String(product.id));
+      }
+      if (sellerNameEl) sellerNameEl.textContent = "You";
+      if (sellerEl) sellerEl.classList.remove("d-none");
+    }
+
     var isSold = String(product.status || "").toLowerCase() === "sold";
     var addBtn = document.getElementById("add-to-cart");
     var buyBtn = document.getElementById("buy-it-now");
     var wishBtn = document.getElementById("add-to-wishlist");
-    if (isSold) {
+    if (isOwn) {
+      /* purchase actions hidden above */
+    } else if (isSold) {
       if (addBtn) {
         addBtn.disabled = true;
         addBtn.innerHTML =
@@ -507,6 +539,10 @@ async function addToWishlist(p) {
     showToast("Please wait — product is loading");
     return;
   }
+  if (typeof isOwnProduct === "function" && isOwnProduct(p)) {
+    showToast("This is your product");
+    return;
+  }
   if (!isLoggedIn()) {
     showToast("Please log in first");
     return;
@@ -528,6 +564,10 @@ async function addToCart(p, options) {
   options = options || {};
   if (!p || !productId) {
     showToast("Please wait — product is loading");
+    return false;
+  }
+  if (typeof isOwnProduct === "function" && isOwnProduct(p)) {
+    showToast("This is your product");
     return false;
   }
 
@@ -565,6 +605,10 @@ if (buyBtn) {
   buyBtn.addEventListener("click", async function () {
     if (!product || !productId) {
       showToast("Please wait — product is loading");
+      return;
+    }
+    if (typeof isOwnProduct === "function" && isOwnProduct(product)) {
+      showToast("This is your product");
       return;
     }
     if (String(product.status || "").toLowerCase() === "sold") {

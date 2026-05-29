@@ -419,6 +419,9 @@
     localStorage.removeItem("token");
     localStorage.removeItem("accessToken");
     localStorage.removeItem("jwt");
+    if (typeof window !== "undefined") {
+      window.currentUser = null;
+    }
   }
 
   function roleFromJwt(token) {
@@ -582,11 +585,43 @@
   window.readStoredUser = readStoredUser;
   window.isAdminUser = isAdminUser;
   window.roleFromJwt = roleFromJwt;
+  function ensureNavbarAdminLink() {
+    var nav = document.querySelector("#navbarSupportedContent .navbar-nav");
+    if (!nav) return null;
+    var existing = document.getElementById("navbar-admin-item");
+    if (existing) return existing;
+    var li = document.createElement("li");
+    li.className = "nav-item";
+    li.id = "navbar-admin-item";
+    li.innerHTML =
+      '<a class="nav-link navbar-admin-nav" href="admin.html">' +
+      '<i class="fa-solid fa-shield-halved me-1" aria-hidden="true"></i>Admin</a>';
+    nav.appendChild(li);
+    return li;
+  }
+
   function applyNavbarAuth() {
     window.currentUser = readStoredUser();
     var loginBtn = document.getElementById("loginBtn");
     var signupBtn = document.getElementById("signupBtn");
     var username = document.getElementById("username");
+    var adminItem = document.getElementById("navbar-admin-item");
+
+    if (window.currentUser && isAdminUser(window.currentUser)) {
+      adminItem = ensureNavbarAdminLink();
+      if (adminItem) adminItem.classList.remove("d-none");
+      if (
+        adminItem &&
+        typeof location !== "undefined" &&
+        /admin\.html$/i.test(location.pathname || "")
+      ) {
+        var adminLink = adminItem.querySelector("a");
+        if (adminLink) adminLink.classList.add("active");
+      }
+    } else if (adminItem) {
+      adminItem.remove();
+    }
+
     if (!loginBtn && !signupBtn && !username) return;
     if (window.currentUser) {
       if (loginBtn) loginBtn.style.display = "none";

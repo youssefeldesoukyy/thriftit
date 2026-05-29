@@ -3,12 +3,61 @@
  * Loaded on seller.html; must run even when auth redirect runs later.
  */
 (function (global) {
-  function updateSellerSizeOptions() {
+  function normalizeSellerSizeCode(raw) {
+    if (raw == null) return "";
+    var s = String(raw).trim();
+    if (!s || s === "—" || s === "-") return "";
+    if (/^\d+$/.test(s)) return s;
+    var key = s.toLowerCase().replace(/[\s._+\-]+/g, "");
+    var fromLabel = {
+      extrasmall: "xs",
+      xsmall: "xs",
+      small: "s",
+      medium: "m",
+      large: "l",
+      extralarge: "xl",
+      xlarge: "xl",
+      xxl: "xxl",
+      "2xl": "xxl",
+      xxxl: "xxxl",
+      "3xl": "xxxl",
+      onesize: "m",
+      os: "m",
+    };
+    if (fromLabel[key]) return fromLabel[key];
+    if (/^(xs|s|m|l|xl|xxl|xxxl)$/.test(key)) return key;
+    return key;
+  }
+
+  function applySellerSizeValue(sizeEl, preserveSize) {
+    var keep = normalizeSellerSizeCode(preserveSize);
+    if (!keep) {
+      sizeEl.value = "";
+      return;
+    }
+    for (var i = 0; i < sizeEl.options.length; i++) {
+      if (sizeEl.options[i].value === keep) {
+        sizeEl.value = keep;
+        return;
+      }
+    }
+    var opt = document.createElement("option");
+    opt.value = keep;
+    opt.textContent = /^\d+$/.test(keep) ? keep : keep.toUpperCase();
+    sizeEl.appendChild(opt);
+    sizeEl.value = keep;
+  }
+
+  function updateSellerSizeOptions(preserveSize) {
     var category = document.getElementById("productCategory");
     var size = document.getElementById("productSize");
     if (!category || !size) return;
 
     var value = (category.value || "").trim().toLowerCase();
+    var keep =
+      preserveSize !== undefined
+        ? preserveSize
+        : normalizeSellerSizeCode(size.value);
     size.required = true;
 
     if (!value) {
@@ -47,15 +96,22 @@
     }
 
     size.innerHTML = html;
-    size.value = "";
+    applySellerSizeValue(size, keep);
   }
 
   function bindSellerSizeSelect() {
     var category = document.getElementById("productCategory");
     if (!category) return;
-    category.addEventListener("change", updateSellerSizeOptions);
-    category.addEventListener("input", updateSellerSizeOptions);
-    updateSellerSizeOptions();
+    category.addEventListener("change", function () {
+      updateSellerSizeOptions();
+    });
+    category.addEventListener("input", function () {
+      updateSellerSizeOptions();
+    });
+    var isEdit = /[?&]edit=/.test(window.location.search || "");
+    if (!isEdit) {
+      updateSellerSizeOptions();
+    }
   }
 
   global.updateSellerSizeOptions = updateSellerSizeOptions;

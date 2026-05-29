@@ -883,9 +883,30 @@
     return wrap.order || wrap;
   }
 
+  function normalizeAdminOrderRow(row) {
+    var base = normalizeOrderRow(row);
+    if (!base) return null;
+    var u = row.userId;
+    var buyerName = "";
+    var buyerEmail = "";
+    if (u && typeof u === "object") {
+      buyerEmail = String(u.email || "").trim();
+      var first = u.firstName ? String(u.firstName).trim() : "";
+      var last = u.lastName ? String(u.lastName).trim() : "";
+      buyerName = [first, last].filter(Boolean).join(" ").trim();
+    }
+    base.buyerName = buyerName || buyerEmail || "Buyer";
+    base.buyerEmail = buyerEmail;
+    return base;
+  }
+
   async function getAllOrdersAdmin() {
     var data = await apiRequest("GET", ordersPath());
-    return unwrapOrdersPayload(data);
+    return unwrapOrdersPayload(data)
+      .map(normalizeAdminOrderRow)
+      .filter(function (o) {
+        return o && o.id;
+      });
   }
 
   async function approveOrderAdmin(orderId) {

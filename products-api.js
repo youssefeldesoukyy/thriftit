@@ -798,6 +798,103 @@
     return true;
   }
 
+  function getCurrentUserId() {
+    var u =
+      typeof window !== "undefined" && window.currentUser
+        ? window.currentUser
+        : null;
+    if (!u) {
+      try {
+        var raw = localStorage.getItem("currentUser");
+        if (raw) u = JSON.parse(raw);
+      } catch (_) {
+        u = null;
+      }
+    }
+    if (!u) return "";
+    return coerceId(u.id != null ? u.id : u._id);
+  }
+
+  function isOwnProduct(product) {
+    if (!product) return false;
+    var uid = getCurrentUserId();
+    if (!uid) return false;
+    var sid = coerceId(product.sellerId);
+    return !!sid && uid === sid;
+  }
+
+  async function updateProductListing(productId, payload) {
+    var pid = coerceId(productId);
+    if (!pid) {
+      throw new Error("Invalid product id");
+    }
+    if (
+      typeof THRIFTIT_STATIC_DESIGN_ONLY !== "undefined" &&
+      THRIFTIT_STATIC_DESIGN_ONLY
+    ) {
+      throw new Error("Cannot update listings in design-only mode");
+    }
+    if (typeof API_BASE === "undefined") {
+      throw new Error("API_BASE is missing (load config.js before products-api.js)");
+    }
+    var productsPath =
+      typeof API_PRODUCTS_PATH !== "undefined"
+        ? API_PRODUCTS_PATH
+        : "/api/products";
+    var apiRoot =
+      typeof thriftitApiBase === "function"
+        ? thriftitApiBase()
+        : String(API_BASE).replace(/\/$/, "");
+    var url = apiRoot + productsPath + "/" + encodeURIComponent(pid);
+    var fetchOpts = {
+      method: "PATCH",
+      headers: Object.assign(
+        { "Content-Type": "application/json" },
+        authHeadersForFetch()
+      ),
+      body: JSON.stringify(payload || {}),
+    };
+    var res;
+    try {
+      res = await fetch(url, fetchOpts);
+    } catch (fetchErr) {
+      if (isNetworkFetchFailure(fetchErr)) {
+        throw new Error(networkFetchMessage());
+      }
+      throw fetchErr;
+    }
+    var ct = (res.headers.get("content-type") || "").toLowerCase();
+    var body;
+    try {
+      if (ct.includes("application/json")) body = await res.json();
+      else body = JSON.parse(await res.text());
+    } catch (_) {
+      body = {};
+    }
+    if (
+      !res.ok ||
+      body.status === "error" ||
+      String(body.status || "").toUpperCase() === "FAIL"
+    ) {
+      var msg =
+        (body && body.message) ||
+        (body && body.error) ||
+        "Could not update listing";
+      if (body && body.errors && typeof body.errors === "object") {
+        var parts = Object.keys(body.errors).map(function (k) {
+          return body.errors[k];
+        });
+        if (parts.length) msg = parts.join("; ");
+      }
+      throw new Error(msg);
+    }
+    var doc =
+      body.data && body.data.product
+        ? body.data.product
+        : body.product || body.data;
+    return normalizeUiProduct(doc);
+  }
+
   async function renderShopProductGrid(containerId, opts) {
     opts = opts || {};
     var container = document.getElementById(containerId);
@@ -835,11 +932,35 @@
           product.price != null && product.price !== ""
             ? formatShopCardValue(product.price) + " EGP"
             : "—";
+        var ownListing = isOwnProduct(product);
+        var ownBadge = ownListing
+          ? '<span class="shop-card__own-badge">Your listing</span>'
+          : "";
+        var ownNote = ownListing
+          ? '<p class="shop-card__own-note">This is your product</p>'
+          : "";
+        var viewHref =
+          "product.html?id=" + encodeURIComponent(product.id);
+        var ctaBlock = ownListing
+          ? '<div class="shop-card__actions">' +
+            '<a href="' +
+            viewHref +
+            '" class="shop-card__cta shop-card__cta--secondary">View</a>' +
+            '<a href="seller.html?edit=' +
+            encodeURIComponent(product.id) +
+            '" class="shop-card__cta">Edit listing</a>' +
+            "</div>"
+          : '<a href="' +
+            viewHref +
+            '" class="shop-card__cta">View product</a>';
         var col = document.createElement("div");
         col.className = "col-12 col-sm-6 col-lg-4 col-xl-3";
         col.innerHTML =
-          '<article class="shop-card h-100">' +
+          '<article class="shop-card h-100' +
+          (ownListing ? " shop-card--own" : "") +
+          '">' +
           '<div class="shop-card__media">' +
+          ownBadge +
           '<div id="' +
           carouselId +
           '" class="carousel slide" data-bs-interval="false">' +
@@ -863,6 +984,7 @@
           '<h2 class="shop-card__title">' +
           formatShopCardValue(formatShopCardTitle(product)) +
           "</h2>" +
+          ownNote +
           '<ul class="shop-card__meta">' +
           '<li><span class="shop-card__label">Size</span><span class="shop-card__value">' +
           formatShopCardValue(product.size) +
@@ -874,9 +996,7 @@
           '<p class="shop-card__price">' +
           price +
           "</p>" +
-          '<a href="product.html?id=' +
-          encodeURIComponent(product.id) +
-          '" class="shop-card__cta">View product</a>' +
+          ctaBlock +
           "</div></article>";
         container.appendChild(col);
         shown++;
@@ -916,6 +1036,9 @@
   window.__normalizeUiProduct = normalizeUiProduct;
   window.fetchProductsFromBackend = fetchProductsFromBackend;
   window.fetchProductsMerged = fetchProductsMerged;
+  window.getCurrentUserId = getCurrentUserId;
+  window.isOwnProduct = isOwnProduct;
+  window.updateProductListing = updateProductListing;
   window.fetchProductById = fetchProductById;
   window.renderShopProductGrid = renderShopProductGrid;
 })();
