@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <script src="config.js"></script>
-  <script src="auth-api.js?v=6"></script>
+  <script src="auth-api.js?v=7"></script>
 </head>
 <body class="thriftit-auth-page">
 
@@ -102,6 +102,19 @@
             <input type="email" id="email" placeholder="Email" autocomplete="email" required>
           </div>
           <div class="auth-field">
+            <label for="phone">Phone</label>
+            <input
+              type="tel"
+              id="phone"
+              placeholder="01XXXXXXXXX"
+              autocomplete="tel"
+              inputmode="numeric"
+              maxlength="11"
+              required
+              oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,11)"
+            >
+          </div>
+          <div class="auth-field">
             <label for="password">Password</label>
             <input type="password" id="password" placeholder="Password" autocomplete="new-password" required>
           </div>
@@ -127,10 +140,17 @@
       var firstName = document.getElementById("firstName").value.trim();
       var lastName = document.getElementById("lastName").value.trim();
       var email = document.getElementById("email").value.trim().toLowerCase();
+      var phone = document.getElementById("phone").value.trim();
       var password = document.getElementById("password").value.trim();
       var confirmPassword = document.getElementById("confirmPassword").value.trim();
-      if (!firstName || !lastName || !email || !password || !confirmPassword) {
+      if (!firstName || !lastName || !email || !phone || !password || !confirmPassword) {
         showToast("Please fill all fields");
+        return;
+      }
+      var phoneDigits = phone.replace(/\D/g, "");
+      if (!/^01\d{9}$/.test(phoneDigits)) {
+        showToast("Enter a valid Egyptian phone (11 digits, starts with 01)");
+        document.getElementById("phone").focus();
         return;
       }
       if (password.length < 6) {
@@ -142,7 +162,7 @@
         return;
       }
       try {
-        await apiRegister(firstName, lastName, email, password);
+        await apiRegister(firstName, lastName, email, password, phoneDigits);
         showToast("Account created");
         setTimeout(function () { window.location.href = "index.html"; }, 350);
       } catch (err) {

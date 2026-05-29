@@ -209,8 +209,10 @@
     user.email = String(user.email).toLowerCase();
     if (opts.firstName) user.firstName = String(opts.firstName).trim();
     if (opts.lastName) user.lastName = String(opts.lastName).trim();
+    if (opts.phone) user.phone = String(opts.phone).trim();
     user.firstName = String(user.firstName || "").trim();
     user.lastName = String(user.lastName || "").trim();
+    if (user.phone != null) user.phone = String(user.phone).trim();
     user.name = userDisplayName(user);
     return user;
   }
@@ -229,6 +231,7 @@
           email: email,
           firstName: u.firstName,
           lastName: u.lastName,
+          phone: u.phone,
           name: u.name || u.username || u.fullName || nameFallback || "",
           id: stringId(u.id != null ? u.id : u._id),
           role: u.role != null ? String(u.role) : "",
@@ -243,6 +246,7 @@
           email: email,
           firstName: wrap.firstName,
           lastName: wrap.lastName,
+          phone: wrap.phone,
           name: wrap.name || nameFallback || "",
           id: stringId(wrap.id != null ? wrap.id : wrap._id),
           role: wrap.role != null ? String(wrap.role) : "",
@@ -361,7 +365,7 @@
     return { user: user, token: token };
   }
 
-  async function apiRegister(firstName, lastName, email, password) {
+  async function apiRegister(firstName, lastName, email, password, phone) {
     if (designOnly()) {
       throw new Error(
         "Design-only mode — set THRIFTIT_STATIC_DESIGN_ONLY = false in config.js to sign up."
@@ -376,6 +380,7 @@
         lastName: lastName,
         email: email,
         password: password,
+        phone: phone,
       }),
     });
 
@@ -395,6 +400,7 @@
     user = normalizeStoredUser(user, {
       firstName: firstName,
       lastName: lastName,
+      phone: phone,
     });
     if (token && user && user.email) {
       persistSession(user, token);
