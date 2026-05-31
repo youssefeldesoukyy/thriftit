@@ -294,8 +294,8 @@
       accessory: "Accessories",
       bags: "Accessories",
       bag: "Accessories",
-      shoes: "Accessories",
-      shoe: "Accessories",
+      shoes: "Shoes",
+      shoe: "Shoes",
     };
     if (labels[key]) return labels[key];
     return String(value || "")
@@ -402,6 +402,46 @@
     return s;
   }
 
+  function deriveProductTitle(doc, description, brand, categoryDisplay) {
+    var raw =
+      doc.name != null && String(doc.name).trim()
+        ? String(doc.name).trim()
+        : doc.title != null && String(doc.title).trim()
+          ? String(doc.title).trim()
+          : doc.productName != null && String(doc.productName).trim()
+            ? String(doc.productName).trim()
+            : doc.product_name != null && String(doc.product_name).trim()
+              ? String(doc.product_name).trim()
+              : "";
+    var desc = String(description || "").trim();
+    if (raw) {
+      var rawLower = raw.toLowerCase();
+      var descLower = desc.toLowerCase();
+      var looksLikeDescription =
+        desc &&
+        (rawLower === descLower ||
+          (descLower.indexOf(rawLower) === 0 && raw.length > 48));
+      if (!looksLikeDescription) return raw;
+    }
+    var b = String(brand || "").trim();
+    var cat = String(categoryDisplay || "").trim();
+    if (b && cat) return b + " · " + cat;
+    if (b) return b;
+    if (cat) return cat;
+    return "Untitled";
+  }
+
+  function productDisplayTitle(product) {
+    if (!product) return "Untitled";
+    return deriveProductTitle(
+      product,
+      product.description,
+      product.brand,
+      product.categoryDisplay ||
+        formatCategoryDisplayName(product.subcategory || product.category)
+    );
+  }
+
   function normalizeUiProduct(doc) {
     if (!doc || typeof doc !== "object") return null;
     var id =
@@ -491,18 +531,12 @@
 
     return {
       id: id,
-      name:
-        doc.name != null
-          ? doc.name
-          : doc.title != null
-            ? doc.title
-            : doc.productName != null
-              ? doc.productName
-              : doc.product_name != null
-                ? doc.product_name
-                : description
-                  ? description.slice(0, 80)
-                  : "Untitled",
+      name: deriveProductTitle(
+        doc,
+        description,
+        doc.brand != null ? String(doc.brand).trim() : "",
+        categoryDisplay
+      ),
       description: description,
       brand: doc.brand != null ? String(doc.brand).trim() : "",
       material: doc.material != null ? String(doc.material).trim() : "",
@@ -1028,6 +1062,7 @@
 
   window.formatProductSize = formatProductSize;
   window.formatCategoryDisplayName = formatCategoryDisplayName;
+  window.productDisplayTitle = productDisplayTitle;
   window.resolveProductImageUrl = resolveProductImageUrl;
   window.uniqueImageUrls = uniqueImageUrls;
   window.isProductListedOnShop = isProductListedOnShop;

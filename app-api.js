@@ -468,6 +468,25 @@
     }
   }
 
+  function bagItemTitleFromProduct(p) {
+    if (!p || typeof p !== "object") return "Item";
+    if (typeof window.__normalizeUiProduct === "function") {
+      var ui = window.__normalizeUiProduct(p);
+      if (ui && typeof window.productDisplayTitle === "function") {
+        return window.productDisplayTitle(ui);
+      }
+      if (ui && ui.name) return String(ui.name).trim() || "Item";
+    }
+    if (typeof window.productDisplayTitle === "function") {
+      return window.productDisplayTitle(p);
+    }
+    var brand = typeof p.brand === "string" ? p.brand.trim() : "";
+    var rawName = typeof p.name === "string" ? p.name.trim() : "";
+    if (rawName) return rawName;
+    if (brand) return brand;
+    return "Item";
+  }
+
   function normalizeCartLine(row) {
     if (!row || typeof row !== "object") return null;
     var p = row.product;
@@ -487,11 +506,7 @@
     }
     if (p && typeof p === "object") {
       var img = firstImageFromProductDoc(p);
-      var title =
-        (typeof p.name === "string" && p.name) ||
-        (typeof p.description === "string" && p.description.trim()) ||
-        (typeof p.brand === "string" && p.brand) ||
-        "Item";
+      var title = bagItemTitleFromProduct(p);
       var pid = extractMongoId(p);
       return {
         id: pid,

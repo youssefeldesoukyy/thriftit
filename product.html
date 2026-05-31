@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <script src="config.js"></script>
     <script src="auth-api.js?v=6"></script>
-    <script src="products-api.js?v=8"></script>
+    <script src="products-api.js?v=11"></script>
     <script src="gallery-nav.js?v=3"></script>
     <script src="app-api.js"></script>
   </head>
@@ -231,7 +231,10 @@ let product = null;
       el.textContent = text;
     }
 
-    document.getElementById("product-name").textContent = product.name || "Untitled";
+    document.getElementById("product-name").textContent =
+      typeof productDisplayTitle === "function"
+        ? productDisplayTitle(product)
+        : (product.name && String(product.name).trim()) || "Untitled";
 
     var brandEl = document.getElementById("product-brand");
     if (product.brand && String(product.brand).trim()) {
@@ -260,7 +263,7 @@ let product = null;
 
     setDetail("detail-category", formatCategory(product));
     setDetail("detail-gender", formatGender(product.gender));
-    setDetail("detail-description", product.description || product.name);
+    setDetail("detail-description", product.description || "—");
     setDetail("detail-size", product.size);
     setDetail("detail-color", product.color);
     setDetail(
@@ -278,7 +281,11 @@ let product = null;
         : "—"
     );
 
-    document.title = (product.name || "Product") + " — Thrift It";
+    document.title =
+      (typeof productDisplayTitle === "function"
+        ? productDisplayTitle(product)
+        : (product.name && String(product.name).trim()) || "Product") +
+      " — Thrift It";
 
     function resolveGallerySrc(img) {
       if (typeof resolveProductImageUrl === "function") {

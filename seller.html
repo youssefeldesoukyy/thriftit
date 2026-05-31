@@ -11,7 +11,7 @@
   <script src="config.js?v=4002"></script>
   <script src="auth-api.js?v=6"></script>
   <script src="app-api.js?v=4"></script>
-  <script src="products-api.js?v=8"></script>
+  <script src="products-api.js?v=11"></script>
 </head>
 <body class="thriftit-seller-page">
 
@@ -329,13 +329,21 @@
     }
 
     function populateSellerFormFromProduct(p) {
-      var fullDesc = String(p.description || p.name || "").trim();
+      var fullDesc = String(p.description || "").trim();
+      var storedName = String(p.name || "").trim();
+      var titleFallback =
+        typeof productDisplayTitle === "function"
+          ? productDisplayTitle(p)
+          : storedName || p.brand || "";
       document.getElementById("productName").value =
-        p.name && String(p.name).trim() !== fullDesc
-          ? String(p.name).trim()
-          : fullDesc.slice(0, 80);
+        storedName &&
+        fullDesc &&
+        storedName.toLowerCase() !== fullDesc.toLowerCase() &&
+        !(fullDesc.toLowerCase().indexOf(storedName.toLowerCase()) === 0 && storedName.length > 48)
+          ? storedName
+          : titleFallback;
       document.getElementById("productBrand").value = p.brand || "";
-      document.getElementById("productDescription").value = fullDesc;
+      document.getElementById("productDescription").value = fullDesc || storedName;
       document.getElementById("productMaterial").value = p.material || "";
       document.getElementById("productColor").value =
         p.color && p.color !== "-" ? p.color : "";
@@ -472,7 +480,8 @@
       if (sellerEditMode) {
         (async function saveListingEdit() {
           var patchPayload = {
-            description: sellerDescriptionFromForm(),
+            name: document.getElementById("productName").value.trim(),
+            description: document.getElementById("productDescription").value.trim(),
             brand: document.getElementById("productBrand").value.trim(),
             material: document.getElementById("productMaterial").value.trim(),
             color: document.getElementById("productColor").value.trim(),
@@ -665,6 +674,7 @@
                 dresses: "Dresses",
                 tops: "Tops",
                 accessories: "Accessories",
+                shoes: "Shoes",
                 pants: "Bottoms"
               };
 
